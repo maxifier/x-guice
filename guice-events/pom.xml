@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>x-guice</artifactId>
+        <groupId>com.magenta.guice</groupId>
+        <version>3.1-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>guice-events</artifactId>
+    <name>XGuice::Events</name>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>com.magenta.guice</groupId>
+            <artifactId>guice-mbean</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>trove</groupId>
+            <artifactId>trove</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.bcel</groupId>
+            <artifactId>bcel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+        </dependency>
+
+
+    </dependencies>
+</project>

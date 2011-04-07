@@ -1,0 +1,11 @@
+<!DOCTYPE idea-plugin PUBLIC "Plugin/DTD"  "http://plugins.intellij.net/plugin.dtd">
+<idea-plugin version="2">
+    <name>Guice JPA Idea plugin</name>
+    <description>Inspections for Guice JPA usages</description>
+    <version>${project.version}</version>
+    <vendor url="http://maxifier.com/" email="aleksey.didik@maxifier.com">Maxifier Ltd.</vendor>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <inspectionToolProvider implementation="com.maxifier.guice.jpa.GuiceJPAInspection"/>
+    </extensions>
+</idea-plugin>

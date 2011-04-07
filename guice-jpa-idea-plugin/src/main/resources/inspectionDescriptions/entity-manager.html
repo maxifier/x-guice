@@ -1,0 +1,17 @@
+<html>
+<body>
+Classes with @DB annotated methods should:
+<ul>
+    <li>Have an EntityManager field</li>
+    <li>EntityManager field should not be static</li>
+</ul>
+Usage of EntityManager field allowed only in @DB annotated methods.
+<br/>
+If @DB annotated method use EntityManager for persist, merge or remove operations,
+transaction support must be enabled,
+else using of transaction support is not required and could be the cause of performance problems.
+<br/>
+Methods <i>joinTransaction()</i> and <i>getTransaction</i> should not be used into @DB annotated methods.
+Use @DB(transaction=REQUIRED) instead.
+</body>
+</html>
