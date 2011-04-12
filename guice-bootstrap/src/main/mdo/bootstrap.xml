@@ -68,6 +68,16 @@
                     </association>
                     <required>false</required>
                 </field>
+                <field xml.tagName="property">
+                    <name>properties</name>
+                    <version>1.0.0+</version>
+                    <description>Properties of application</description>
+                    <association xml.itemsStyle="flat">
+                        <type>Property</type>
+                        <multiplicity>*</multiplicity>
+                    </association>
+                    <required>false</required>
+                </field>
             </fields>
         </class>
         <class rootElement="false" xml.tagName="component">
@@ -146,23 +156,17 @@
         <class rootElement="false" xml.tagName="property">
             <name>Property</name>
             <version>1.0.0+</version>
-            <description>Property description for standard binding 'bindConstant()'</description>
+            <description>Property binding to be used with @Property annotation</description>
             <fields>
                 <field>
-                    <name>annotation</name>
-                    <description>Interface class</description>
+                    <name>name</name>
+                    <description>property name</description>
                     <type>String</type>
-                    <required>false</required>
-                </field>
-                <field>
-                    <name>named</name>
-                    <description>@Named value</description>
-                    <type>String</type>
-                    <required>false</required>
+                    <required>true</required>
                 </field>
                 <field>
                     <name>value</name>
-                    <description>Value class</description>
+                    <description>property value</description>
                     <type>String</type>
                     <required>true</required>
                 </field>

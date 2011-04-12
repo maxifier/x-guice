@@ -7,6 +7,7 @@ import com.google.inject.name.Names;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 /**
@@ -51,6 +52,9 @@ public class XmlConfigurationTest {
         assertTrue(in1 instanceof InImpl);
         assertTrue(in2 instanceof InImpl);
         assertTrue(in1 == in2);
+
+        assertEquals(((InImpl) in1).getProperty(), "testValue");
+
         //test asEager
         inj.getInstance(AsEager.class);
         //test constant

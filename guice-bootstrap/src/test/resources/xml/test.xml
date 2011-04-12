@@ -41,8 +41,8 @@
     </constant>
 
     <property>
-        <name></name>
-        <value></value>
+        <name>test</name>
+        <value>testValue</value>
     </property>
 
 </guice>

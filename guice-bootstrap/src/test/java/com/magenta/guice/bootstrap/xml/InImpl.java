@@ -10,5 +10,18 @@ package com.magenta.guice.bootstrap.xml;
 * Use is subject to license terms.
 */
 
+import com.google.inject.Inject;
+import com.magenta.guice.property.Property;
+
 public class InImpl implements In {
+    private final String property;
+
+    @Inject
+    public InImpl(@Property("test") String property) {
+        this.property = property;
+    }
+
+    public String getProperty() {
+        return property;
+    }
 }

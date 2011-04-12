@@ -5,12 +5,16 @@ import com.magenta.guice.bootstrap.ResourceUtils;
 import com.magenta.guice.bootstrap.model.Component;
 import com.magenta.guice.bootstrap.model.Constant;
 import com.magenta.guice.bootstrap.model.Guice;
+import com.magenta.guice.bootstrap.model.Property;
 import com.magenta.guice.bootstrap.model.io.xpp3.XGuiceBootstrapXpp3Reader;
+import com.magenta.guice.property.PropertyModule;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Project: Maxifier
@@ -44,9 +48,22 @@ public class XmlModule extends AbstractModule {
         InputStream is = readConfiguration();
         Guice guice = parseConfiguration(is);
         ReflectionBinder reflectionBinder = new ReflectionBinder(binder(), classLoader);
+        bindProperties(guice);
         bindModules(guice, reflectionBinder);
         bindComponent(guice, reflectionBinder);
         bindConstant(guice, reflectionBinder);
+    }
+
+    private void bindProperties(Guice guice) {
+        List<Property> properties = guice.getProperties();
+        Map<String, String> propertiesMap = new HashMap<String, String>(properties.size());
+        for (Property property : properties) {
+            String old = propertiesMap.put(property.getName(), property.getValue());
+            if (old != null) {
+                throw new IllegalStateException("Multiple properties with name " + property.getName() + " exists");
+            }
+        }
+        install(new PropertyModule(propertiesMap));
     }
 
     private void bindComponent(Guice guice, ReflectionBinder reflectionBinder) {

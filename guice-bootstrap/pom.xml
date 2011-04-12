@@ -40,5 +40,9 @@
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-utils</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.magenta.guice</groupId>
+            <artifactId>guice-property</artifactId>
+        </dependency>
     </dependencies>
 </project>
