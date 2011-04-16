@@ -45,8 +45,9 @@ public class XmlModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        InputStream is = readConfiguration();
-        Guice guice = parseConfiguration(is);
+        InputStream cfgStream = readConfiguration();
+        Guice guice = parseConfiguration(cfgStream);
+        ResourceUtils.close(cfgStream);
         ReflectionBinder reflectionBinder = new ReflectionBinder(binder(), classLoader);
         bindProperties(guice);
         bindModules(guice, reflectionBinder);

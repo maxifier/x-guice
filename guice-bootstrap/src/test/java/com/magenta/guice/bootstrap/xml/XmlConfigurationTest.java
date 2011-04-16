@@ -28,7 +28,7 @@ public class XmlConfigurationTest {
     @DataProvider(name = "files")
     public Object[][] fileNames() {
         return new Object[][]{
-                {"classpath:xml/test.xml"}
+                {"classpath://xml/test.xml"}
         };
     }
 

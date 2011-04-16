@@ -32,7 +32,7 @@ public class PluginsManager {
 
     private static final Logger logger = LoggerFactory.getLogger(PluginsManager.class);
 
-    private static final String PLUGIN_INFO_PATH = "META-INF/maxifier-plugin.xml";
+    private static final String PLUGIN_INFO_PATH = "META-INF/plugin.xml";
 
     private static final FilenameFilter jarFilter = new FilenameFilter() {
         @Override

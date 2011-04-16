@@ -12,9 +12,9 @@ public class ResourceUtils {
 
     private static final Logger log = LoggerFactory.getLogger(ResourceUtils.class);
 
-    public static final String CLASSPATH_PREFIX = "classpath:";
-    public static final String URL_PREFIX = "url:";
-    public static final String FILE_PREFIX = "file:";
+    public static final String CLASSPATH_PREFIX = "classpath://";
+    public static final String URL_PREFIX = "url://";
+    public static final String FILE_PREFIX = "file://";
 
 
     private ResourceUtils() {
@@ -26,27 +26,6 @@ public class ResourceUtils {
                 (resourcePath.startsWith(CLASSPATH_PREFIX) ||
                         resourcePath.startsWith(URL_PREFIX) ||
                         resourcePath.startsWith(FILE_PREFIX));
-    }
-
-    public static boolean resourceExists(String resourcePath) {
-        InputStream stream = null;
-        boolean exists = false;
-
-        try {
-            stream = getInputStreamForPath(resourcePath);
-            exists = true;
-        } catch (IOException e) {
-            stream = null;
-        } finally {
-            if (stream != null) {
-                try {
-                    stream.close();
-                } catch (IOException ignored) {
-                }
-            }
-        }
-
-        return exists;
     }
 
 
@@ -89,7 +68,7 @@ public class ResourceUtils {
     }
 
     private static String stripPrefix(String resourcePath) {
-        return resourcePath.substring(resourcePath.indexOf(":") + 1);
+        return resourcePath.substring(resourcePath.indexOf("://") + 3);
     }
 
 

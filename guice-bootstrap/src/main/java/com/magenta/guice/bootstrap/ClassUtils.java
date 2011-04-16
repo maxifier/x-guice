@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
 
 
 public class ClassUtils {
@@ -88,62 +87,6 @@ public class ClassUtils {
         }
 
         return clazz;
-    }
-
-    public static boolean isAvailable(String fullyQualifiedClassName) {
-        try {
-            forName(fullyQualifiedClassName);
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-    }
-
-    public static Object newInstance(String fqcn) throws ClassNotFoundException {
-        return newInstance(forName(fqcn));
-    }
-
-    public static Object newInstance(String fqcn, Object... args) throws ClassNotFoundException {
-        return newInstance(forName(fqcn), args);
-    }
-
-    public static Object newInstance(Class clazz) {
-        if (clazz == null) {
-            String msg = "Class method parameter cannot be null.";
-            throw new IllegalArgumentException(msg);
-        }
-        try {
-            return clazz.newInstance();
-        } catch (Exception e) {
-            throw new InstantiationException("Unable to instantiate class [" + clazz.getName() + "]", e);
-        }
-    }
-
-    public static Object newInstance(Class clazz, Object... args) {
-        Class[] argTypes = new Class[args.length];
-        for (int i = 0; i < args.length; i++) {
-            argTypes[i] = args[i].getClass();
-        }
-        Constructor ctor = getConstructor(clazz, argTypes);
-        return instantiate(ctor, args);
-    }
-
-    public static Constructor getConstructor(Class clazz, Class... argTypes) {
-        try {
-            return clazz.getConstructor(argTypes);
-        } catch (NoSuchMethodException e) {
-            throw new IllegalStateException(e);
-        }
-
-    }
-
-    public static Object instantiate(Constructor ctor, Object... args) {
-        try {
-            return ctor.newInstance(args);
-        } catch (Exception e) {
-            String msg = "Unable to instantiate Permission instance with constructor [" + ctor + "]";
-            throw new InstantiationException(msg, e);
-        }
     }
 
     /**

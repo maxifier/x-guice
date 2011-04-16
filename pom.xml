@@ -8,10 +8,10 @@
         <version>2.1</version>
     </parent>
 
-    <groupId>com.magenta.guice</groupId>
+    <groupId>com.maxifier.guice</groupId>
     <artifactId>x-guice</artifactId>
     <packaging>pom</packaging>
-    <version>3.1-SNAPSHOT</version>
+    <version>3.0.1-SNAPSHOT</version>
     <name>XGuice</name>
     <description>Magenta guice extensions</description>
 
@@ -26,12 +26,12 @@
         <module>guice-override</module>
         <module>guice-jpa</module>
         <module>guice-jpa-idea-plugin</module>
+        <module>guice-timer</module>
     </modules>
 
     <scm>
-        <connection>scm:svn:svn://192.0.2.122/magenta-projects/branches/x-guice/x-guice-0.2.x</connection>
-        <developerConnection>scm:svn:svn://192.0.2.122/magenta-projects/branches/x-guice/x-guice-0.2.x
-        </developerConnection>
+        <connection>scm:svn:svn://192.0.2.113/maxifier-projects/x-guice/trunk</connection>
+        <developerConnection>scm:svn:svn://192.0.2.113/maxifier-projects/x-guice/trunk</developerConnection>
     </scm>
 
     <properties>
@@ -114,43 +114,38 @@
             </dependency>
 
             <dependency>
-                <groupId>com.magenta.guice</groupId>
+                <groupId>com.maxifier.guice</groupId>
                 <artifactId>guice-bootstrap</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.magenta.guice</groupId>
+                <groupId>com.maxifier.guice</groupId>
                 <artifactId>guice-events</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.magenta.guice</groupId>
+                <groupId>com.maxifier.guice</groupId>
                 <artifactId>guice-lifecycle</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.magenta.guice</groupId>
+                <groupId>com.maxifier.guice</groupId>
                 <artifactId>guice-mbean</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.magenta.guice</groupId>
+                <groupId>com.maxifier.guice</groupId>
                 <artifactId>guice-property</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.magenta.guice</groupId>
+                <groupId>com.maxifier.guice</groupId>
                 <artifactId>guice-scopes</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.magenta.guice</groupId>
+                <groupId>com.maxifier.guice</groupId>
                 <artifactId>guice-decorator</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.magenta.guice</groupId>
-                <artifactId>guice-jpa</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -194,6 +189,11 @@
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-entitymanager</artifactId>
                 <version>3.5.1-Final</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sf.cron4j</groupId>
+                <artifactId>cron4j</artifactId>
+                <version>2.2.3</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

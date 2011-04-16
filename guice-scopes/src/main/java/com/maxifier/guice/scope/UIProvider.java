@@ -1,17 +1,9 @@
-package com.magenta.guice.scope;
+package com.maxifier.guice.scope;
 
 import com.google.inject.Provider;
 
 import javax.swing.*;
-import java.lang.reflect.InvocationTargetException;/*
-* Project: Maxifier
-* Author: Aleksey Didik
-* Created: 23.05.2008 10:19:35
-* 
-* Copyright (c) 1999-2009 Magenta Corporation Ltd. All Rights Reserved.
-* Magenta Technology proprietary and confidential.
-* Use is subject to license terms.
-*/
+import java.lang.reflect.InvocationTargetException;
 
 class UIProvider<T> implements Provider<T> {
 
