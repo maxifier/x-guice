@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+@SuppressWarnings({"UnusedDeclaration"})
 public class ResourceUtils {
 
     private static final Logger log = LoggerFactory.getLogger(ResourceUtils.class);
@@ -26,6 +27,27 @@ public class ResourceUtils {
                 (resourcePath.startsWith(CLASSPATH_PREFIX) ||
                         resourcePath.startsWith(URL_PREFIX) ||
                         resourcePath.startsWith(FILE_PREFIX));
+    }
+
+    public static boolean resourceExists(String resourcePath) {
+        InputStream stream = null;
+        boolean exists = false;
+
+        try {
+            stream = getInputStreamForPath(resourcePath);
+            exists = true;
+        } catch (IOException e) {
+            stream = null;
+        } finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+
+        return exists;
     }
 
 
@@ -48,6 +70,7 @@ public class ResourceUtils {
         }
         return is;
     }
+
 
     private static InputStream loadFromFile(String path) throws IOException {
         if (log.isDebugEnabled()) {
