@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -11,7 +10,7 @@
     <groupId>com.maxifier.guice</groupId>
     <artifactId>x-guice</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.1-SNAPSHOT</version>
+    <version>3.0.1</version>
     <name>XGuice</name>
     <description>Magenta guice extensions</description>
 
@@ -30,8 +29,8 @@
     </modules>
 
     <scm>
-        <connection>scm:svn:svn://192.0.2.113/maxifier-projects/x-guice/trunk</connection>
-        <developerConnection>scm:svn:svn://192.0.2.113/maxifier-projects/x-guice/trunk</developerConnection>
+        <connection>scm:svn:svn://192.0.2.113/maxifier-projects/x-guice/tags/x-guice-3.0.1</connection>
+        <developerConnection>scm:svn:svn://192.0.2.113/maxifier-projects/x-guice/tags/x-guice-3.0.1</developerConnection>
     </scm>
 
     <properties>
