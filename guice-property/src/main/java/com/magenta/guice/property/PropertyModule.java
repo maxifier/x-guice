@@ -31,6 +31,7 @@ public class PropertyModule extends AbstractModule {
 
     private final PropertiesHandler propertiesHandler;
 
+    @SuppressWarnings({"UnusedDeclaration"})
     public PropertyModule(PropertiesHandler propertiesHandler) {
         this.propertiesHandler = propertiesHandler;
     }
@@ -71,13 +72,6 @@ public class PropertyModule extends AbstractModule {
         }
     }
 
-    public static void bindProperties(Binder binder, Map<String, String> propertiesMap) {
-        bindProperties(binder, new MapPropertiesHandler(propertiesMap));
-    }
-
-    public static void bindProperties(Binder binder, Properties properties) {
-        bindProperties(binder, new JavaPropertiesHandler(properties));
-    }
 
     @Override
     protected void configure() {
@@ -85,7 +79,7 @@ public class PropertyModule extends AbstractModule {
         bindTypes(binder());
     }
 
-    public static class JavaPropertiesHandler implements PropertiesHandler {
+    static class JavaPropertiesHandler implements PropertiesHandler {
         private final Properties properties;
 
         public JavaPropertiesHandler(Properties properties) {
@@ -103,7 +97,7 @@ public class PropertyModule extends AbstractModule {
         }
     }
 
-    public static class MapPropertiesHandler implements PropertiesHandler {
+    static class MapPropertiesHandler implements PropertiesHandler {
         private final Map<String, String> propertiesMap;
 
         public MapPropertiesHandler(Map<String, String> propertiesMap) {

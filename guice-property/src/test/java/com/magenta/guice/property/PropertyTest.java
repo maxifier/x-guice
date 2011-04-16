@@ -38,8 +38,8 @@ public class PropertyTest {
         Injector inj = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
+                install(new PropertyModule(registry));
                 bind(Animal.class).to(AnimalImpl.class);
-                PropertyModule.bindProperties(binder(), registry);
             }
         });
 
