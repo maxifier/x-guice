@@ -2,7 +2,7 @@
     <parent>
         <artifactId>x-guice</artifactId>
         <groupId>com.maxifier.guice</groupId>
-        <version>3.0.4-SNAPSHOT</version>
+        <version>3.0.4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.maxifier.guice</groupId>
