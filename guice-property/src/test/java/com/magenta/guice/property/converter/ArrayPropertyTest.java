@@ -39,6 +39,7 @@ public class ArrayPropertyTest {
             @Override
             protected void configure() {
                 bind(Form.class).to(FormImpl.class);
+                PropertyModule.bindTypes(binder());
             }
         });
 

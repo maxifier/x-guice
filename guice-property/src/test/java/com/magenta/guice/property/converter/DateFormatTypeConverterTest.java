@@ -1,9 +1,6 @@
 package com.magenta.guice.property.converter;
 
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.TypeLiteral;
+import com.google.inject.*;
 import com.magenta.guice.property.Property;
 import com.magenta.guice.property.PropertyModule;
 import org.testng.annotations.Test;
@@ -16,15 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.testng.Assert.assertEquals;/*
-* Project: Maxifier
-* Author: Aleksey Didik
-* Created: 23.05.2008 10:19:35
-* 
-* Copyright (c) 1999-2009 Magenta Corporation Ltd. All Rights Reserved.
-* Magenta Technology proprietary and confidential.
-* Use is subject to license terms.
-*/
+import static org.testng.Assert.assertEquals;
 
 public class DateFormatTypeConverterTest {
     @Test
@@ -43,7 +32,12 @@ public class DateFormatTypeConverterTest {
     public void testInContainer() throws ParseException {
         Map<String, String> props = new HashMap<String, String>();
         props.put("df", "dd/MM/yyyy");
-        Injector inj = Guice.createInjector(new PropertyModule(props));
+        Injector inj = Guice.createInjector(new PropertyModule(props), new AbstractModule() {
+            @Override
+            protected void configure() {
+                PropertyModule.bindTypes(binder());
+            }
+        });
         Foo foo = inj.getInstance(Foo.class);
         DateFormat df = foo.df;
         assertEquals(df.parse("12/11/2009"), new SimpleDateFormat("dd/MM/yyyy").parse("12/11/2009"));

@@ -1,9 +1,6 @@
 package com.magenta.guice.property.converter;
 
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.TypeLiteral;
+import com.google.inject.*;
 import com.magenta.guice.property.Property;
 import com.magenta.guice.property.PropertyModule;
 import org.testng.annotations.Test;
@@ -41,7 +38,12 @@ public class URLTypeConverterTest {
     public void testInContainer() throws ParseException, URISyntaxException, MalformedURLException {
         Map<String, String> props = new HashMap<String, String>();
         props.put("url", "http://maxifier.com/index.html");
-        Injector inj = Guice.createInjector(new PropertyModule(props));
+        Injector inj = Guice.createInjector(new PropertyModule(props), new Module() {
+            @Override
+            public void configure(Binder binder) {
+                PropertyModule.bindTypes(binder);
+            }
+        });
         Foo foo = inj.getInstance(Foo.class);
         URL url = foo.url;
         assertEquals(url, new URL("http://maxifier.com/index.html"));
