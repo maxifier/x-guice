@@ -170,7 +170,7 @@ public class EntityManagerInspection extends AbstractDBInspection {
                 PsiElement[] methodCalls = getFieldUsages(emField, psiMethod);
                 boolean trRequired = false;
                 for (PsiElement methodCall : methodCalls) {
-                    if (checkMethodCall(methodCall, "persist", "delete", "merge")) {
+                    if (checkMethodCall(methodCall, "persist", "remove", "merge")) {
                         trRequired = true;
                         if (!isTransaction)
                             problemDescriptors.add(inspectionManager.createProblemDescriptor(
