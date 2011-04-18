@@ -29,22 +29,13 @@ import static com.magenta.guice.property.converter.ArrayTypeConverter.*;
  */
 public class PropertyModule extends AbstractModule {
 
-    private final PropertiesHandler propertiesHandler;
 
-    @SuppressWarnings({"UnusedDeclaration"})
-    public PropertyModule(PropertiesHandler propertiesHandler) {
-        this.propertiesHandler = propertiesHandler;
-    }
-
-    public PropertyModule(Map<String, String> propertiesMap) {
-        this.propertiesHandler = new MapPropertiesHandler(propertiesMap);
-    }
-
-    public PropertyModule(Properties properties) {
-        this.propertiesHandler = new JavaPropertiesHandler(properties);
-    }
-
-    private static void bindTypes(Binder binder) {
+    /**
+     * Bind types converters, could be called once per injector
+     *
+     * @param binder - binder of your module
+     */
+    public static void bindTypes(Binder binder) {
         //array converter
         binder.convertToTypes(new ArrayMatcher(String.class), STRING_ARRAY_CONVERTER);
         binder.convertToTypes(new ArrayMatcher(int.class), INT_ARRAY_CONVERTER);
@@ -62,7 +53,33 @@ public class PropertyModule extends AbstractModule {
         binder.convertToTypes(new ClazzMatcher(Date.class), new DateTypeConverter());
     }
 
-    private static void bindProperties(Binder binder, final PropertiesHandler propertiesHandler) {
+    /**
+     * Bind properties from Java Properties class
+     *
+     * @param binder     - your module binder
+     * @param properties - properties instance
+     */
+    public static void bindProperties(Binder binder, final Properties properties) {
+        bindProperties(binder, new JavaPropertiesHandler(properties));
+    }
+
+    /**
+     * Bind properties from Map
+     *
+     * @param binder        - your module binder
+     * @param propertiesMap - map of properties
+     */
+    public static void bindProperties(Binder binder, final Map<String, String> propertiesMap) {
+        bindProperties(binder, new MapPropertiesHandler(propertiesMap));
+    }
+
+    /**
+     * Bind properties from PropertiesHandler interface implementation
+     *
+     * @param binder            - your module binder
+     * @param propertiesHandler - PropertiesHandler implementation instance
+     */
+    public static void bindProperties(Binder binder, final PropertiesHandler propertiesHandler) {
         for (final String key : propertiesHandler.keys()) {
             binder.bindConstant().annotatedWith(new PropertyImpl(key)).to(new Provider<String>() {
                 public String get() {
@@ -72,11 +89,37 @@ public class PropertyModule extends AbstractModule {
         }
     }
 
+    /**
+     * Bind JVM System properties.
+     *
+     * @param binder - your module binder
+     */
+    public static void bindSystemProperties(Binder binder) {
+        bindProperties(binder, System.getProperties());
+    }
+
+    //deprecated, leaved for compatibility reason
+    @Deprecated
+    private final PropertiesHandler propertiesHandler;
 
     @Override
     protected void configure() {
         bindProperties(binder(), propertiesHandler);
-        bindTypes(binder());
+    }
+
+    @Deprecated //use static methods instead
+    public PropertyModule(PropertiesHandler propertiesHandler) {
+        this.propertiesHandler = propertiesHandler;
+    }
+
+    @Deprecated //use static methods instead
+    public PropertyModule(Map<String, String> propertiesMap) {
+        this.propertiesHandler = new MapPropertiesHandler(propertiesMap);
+    }
+
+    @Deprecated //use static methods instead
+    public PropertyModule(Properties properties) {
+        this.propertiesHandler = new JavaPropertiesHandler(properties);
     }
 
     static class JavaPropertiesHandler implements PropertiesHandler {
