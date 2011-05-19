@@ -64,7 +64,7 @@ public class XmlModule extends AbstractModule {
                 throw new IllegalStateException("Multiple properties with name " + property.getName() + " exists");
             }
         }
-        install(new PropertyModule(propertiesMap));
+        PropertyModule.bindProperties(binder(), propertiesMap);
     }
 
     private void bindComponent(Guice guice, ReflectionBinder reflectionBinder) {

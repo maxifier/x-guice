@@ -83,7 +83,8 @@ public class PropertyModule extends AbstractModule {
         for (final String key : propertiesHandler.keys()) {
             binder.bindConstant().annotatedWith(new PropertyImpl(key)).to(new Provider<String>() {
                 public String get() {
-                    return propertiesHandler.get(key);
+                    String unfilteredValue = propertiesHandler.get(key);
+                    return unfilteredValue;
                 }
             });
         }
