@@ -1,8 +1,7 @@
-package com.magenta.guice.mbean;
+package com.maxifier.guice.mbean;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.google.inject.Module;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -32,6 +31,7 @@ public class DoubleStartTest {
         MBeanServer server = mock(MBeanServer.class);
         when(server.registerMBean(any(), any(ObjectName.class))).thenAnswer(new Answer<Object>() {
             int count = 0;
+
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 if (++count != 2) {
@@ -47,13 +47,13 @@ public class DoubleStartTest {
                 bind(Foo.class).asEagerSingleton();
             }
         };
-        Injector inj1 = Guice.createInjector(new MBeanManagerModule("test", server), module);
-        Injector inj2 = Guice.createInjector(new MBeanManagerModule("test", server), module);
+        Guice.createInjector(new MBeanManagerModule("test", server), module);
+        Guice.createInjector(new MBeanManagerModule("test", server), module);
         verify(server, times(3)).registerMBean(any(), any(ObjectName.class));
         verify(server).unregisterMBean(any(ObjectName.class));
     }
 
-    @MBean(name = "service=Foo")
+    @com.magenta.guice.mbean.MBean(name = "service=Foo")
     static class Foo implements FooMBean {
     }
 

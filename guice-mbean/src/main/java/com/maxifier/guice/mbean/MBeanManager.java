@@ -1,4 +1,4 @@
-package com.magenta.guice.mbean;
+package com.maxifier.guice.mbean;
 
 import com.google.inject.ImplementedBy;
 

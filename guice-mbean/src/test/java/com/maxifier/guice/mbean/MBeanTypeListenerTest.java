@@ -1,4 +1,4 @@
-package com.magenta.guice.mbean;
+package com.maxifier.guice.mbean;
 
 import com.google.inject.Key;
 import com.google.inject.MembersInjector;
@@ -9,14 +9,12 @@ import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.Message;
 import com.google.inject.spi.TypeEncounter;
 import org.aopalliance.intercept.MethodInterceptor;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.testng.annotations.Test;
 
 import java.lang.reflect.Method;
 
-import static org.mockito.Mockito.*;
-import static org.testng.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /*
 * Project: Smart Advertising

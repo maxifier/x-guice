@@ -1,4 +1,4 @@
-package com.magenta.guice.mbean;
+package com.maxifier.guice.mbean;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -17,7 +17,6 @@ import java.lang.annotation.Target;
  *
  * @author Aleksey Didik
  */
-@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface MBean {

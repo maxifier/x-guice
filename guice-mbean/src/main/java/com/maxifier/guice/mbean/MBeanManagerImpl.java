@@ -1,4 +1,4 @@
-package com.magenta.guice.mbean;
+package com.maxifier.guice.mbean;
 
 import com.google.inject.Singleton;
 import org.slf4j.Logger;
@@ -6,27 +6,25 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PreDestroy;
 import javax.management.*;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 
 @Singleton
 public class MBeanManagerImpl implements MBeanManager {
     private static Logger logger = LoggerFactory.getLogger(MBeanManagerImpl.class);
 
-    private static final String DOMAIN_NAME_DF = "yyyy/M/d-H.m.s";
-
     private final Collection<ObjectName> mbeans = new HashSet<ObjectName>();
     private final String domain;
+    private final MBeanGenerator mbeanGenerator;
     private final MBeanServer mbeanServer;
 
     public MBeanManagerImpl(String domain,
-                            MBeanServer mbeanServer) {
+                            MBeanServer mbeanServer, MBeanGenerator mBeanGenerator) {
         this.mbeanServer = mbeanServer;
         //add current time
-        this.domain = domain + "-" + new SimpleDateFormat(DOMAIN_NAME_DF).format(new Date());
+        this.domain = domain;
+        this.mbeanGenerator = mBeanGenerator;
         addShutdownHook();
     }
 
@@ -46,9 +44,10 @@ public class MBeanManagerImpl implements MBeanManager {
     }
 
     @Override
-    public synchronized void register(String name, Object mbean) {
+    public synchronized void register(String name, Object mbeanPretender) {
         try {
             ObjectName objectName = prepareObjectName(name);
+            Object mbean = makeMBean(mbeanPretender);
             try {
                 mbeanServer.registerMBean(mbean, objectName);
             } catch (InstanceAlreadyExistsException e) {
@@ -61,7 +60,7 @@ public class MBeanManagerImpl implements MBeanManager {
                 mbeanServer.registerMBean(mbean, objectName);
             }
             mbeans.add(objectName);
-        } catch (MalformedObjectNameException e) {
+        } catch (MalformedObjectNameException e) {                    //TODO (didik) object info into warns
             logger.warn("Unable to register mbean, wrong name", e);
         } catch (MBeanRegistrationException e) {
             logger.warn("Unable to register mbean", e);
@@ -69,7 +68,13 @@ public class MBeanManagerImpl implements MBeanManager {
             logger.warn("Unable to register mbean, wrong mbean class", e);
         } catch (InstanceAlreadyExistsException e) {
             logger.warn("Unable to register mbean, instance already exists", e);
+        } catch (MBeanGenerationException e) {
+            logger.warn("Unable to register mbean, instance is not compliant with JMX spec and mbean generation was failed", e);
         }
+    }
+
+    Object makeMBean(Object mbeanPretender) throws MBeanGenerationException {
+        return checkCompliantion(mbeanPretender) ? mbeanPretender : mbeanGenerator.makeMBean(mbeanPretender);
     }
 
     @Override
@@ -105,13 +110,18 @@ public class MBeanManagerImpl implements MBeanManager {
         MBean mbeanAnnotation = mbeanClass.getAnnotation(MBean.class);
         if (mbeanAnnotation != null) {
             name = mbeanAnnotation.name();
+        } else {
+            //check old name
+            com.magenta.guice.mbean.MBean oldAnnotation = mbeanClass.getAnnotation(com.magenta.guice.mbean.MBean.class);
+            if (oldAnnotation != null) {
+                name = oldAnnotation.name();
+            }
         }
         if (isBlank(name)) {
             name = makeDefaultName(mbeanClass);
         }
         return checkAlreadyDomained(name);
     }
-
 
     String checkAlreadyDomained(String mbeanName) {
         final int index = mbeanName.indexOf(':');
@@ -122,6 +132,7 @@ public class MBeanManagerImpl implements MBeanManager {
         }
         return mbeanName;
     }
+
 
     String makeDefaultName(Class<?> mbeanClass) {
         return String.format("class=%s", mbeanClass.getName());
@@ -151,6 +162,18 @@ public class MBeanManagerImpl implements MBeanManager {
                 unregister();
             }
         }));
+    }
+
+    public static boolean checkCompliantion(Object mbeanPretender) {
+        Class<?> mbeanPretenderClass = mbeanPretender.getClass();
+        String mbeanPretenderInterfaceName = mbeanPretenderClass.getName() + "MBean";
+        Class<?>[] mbeanPretenderClassInterfaces = mbeanPretenderClass.getInterfaces();
+        for (Class<?> mbeanPretenderClassInterface : mbeanPretenderClassInterfaces) {
+            if (mbeanPretenderClassInterface.getName().equals(mbeanPretenderInterfaceName)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
