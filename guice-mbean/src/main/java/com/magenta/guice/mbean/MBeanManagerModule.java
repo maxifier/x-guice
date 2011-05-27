@@ -1,5 +1,6 @@
 package com.magenta.guice.mbean;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.maxifier.guice.mbean.MBeanModule;
 
@@ -9,7 +10,9 @@ import javax.management.MBeanServer;
  * Old MBeanManager module
  */
 @Deprecated
-public final class MBeanManagerModule {
+public final class MBeanManagerModule extends AbstractModule {
+
+    private MBeanModule mBeanModule;
 
     @Deprecated
     public static Module platform(String domain) {
@@ -24,5 +27,14 @@ public final class MBeanManagerModule {
     @Deprecated
     public static Module noOperations() {
         return MBeanModule.noOperations();
+    }
+
+    public MBeanManagerModule(String domain, MBeanServer mbeanServer) {
+        mBeanModule = new MBeanModule(domain, mbeanServer);
+    }
+
+    @Override
+    protected void configure() {
+        install(mBeanModule);
     }
 }

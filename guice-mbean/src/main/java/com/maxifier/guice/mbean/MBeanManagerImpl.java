@@ -19,8 +19,7 @@ public class MBeanManagerImpl implements MBeanManager {
     private final MBeanGenerator mbeanGenerator;
     private final MBeanServer mbeanServer;
 
-    public MBeanManagerImpl(String domain,
-                            MBeanServer mbeanServer, MBeanGenerator mBeanGenerator) {
+    public MBeanManagerImpl(String domain, MBeanServer mbeanServer, MBeanGenerator mBeanGenerator) {
         this.mbeanServer = mbeanServer;
         //add current time
         this.domain = domain;
