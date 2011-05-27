@@ -28,7 +28,7 @@ import java.util.HashSet;
 * Use is subject to license terms.
 */
 
-public class PluginsManager {
+public final class PluginsManager {
 
     private static final Logger logger = LoggerFactory.getLogger(PluginsManager.class);
 

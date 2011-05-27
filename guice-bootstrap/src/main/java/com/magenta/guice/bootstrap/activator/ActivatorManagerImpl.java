@@ -40,21 +40,29 @@ public class ActivatorManagerImpl implements ActivatorManager {
                             activator.getClass(), method));
                 }
                 if (!method.isAccessible()) {
-                    AccessController.doPrivileged(new PrivilegedAction<Object>() {
-                        @Override
-                        public Object run() {
-                            method.setAccessible(true);
-                            return null;
-                        }
-                    });
+                    AccessController.doPrivileged(new MakeAccessiblePrivilegedAction(method));
                 }
                 try {
                     method.invoke(activator);
                 } catch (Exception e) {
-                    throw new RuntimeException(String.format("Unable to invoke activator method %s.%s", activator.getClass(), method));
+                    throw new RuntimeException(String.format("Unable to invoke activator method %s.%s", activator.getClass(), method), e);
                 }
             }
         }
         activators.clear();
+    }
+
+    private static class MakeAccessiblePrivilegedAction implements PrivilegedAction<Object> {
+        private final Method method;
+
+        public MakeAccessiblePrivilegedAction(Method method) {
+            this.method = method;
+        }
+
+        @Override
+        public Object run() {
+            method.setAccessible(true);
+            return null;
+        }
     }
 }

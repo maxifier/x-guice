@@ -1,7 +1,10 @@
 package com.maxifier.guice.jpa;
 
 import com.intellij.codeHighlighting.HighlightDisplayLevel;
-import com.intellij.codeInspection.*;
+import com.intellij.codeInspection.InspectionManager;
+import com.intellij.codeInspection.IntentionAndQuickFixAction;
+import com.intellij.codeInspection.ProblemDescriptor;
+import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
@@ -74,21 +77,7 @@ public class DBClassesInspection extends AbstractDBInspection {
     @Override
     public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
         List<ProblemDescriptor> problemDescriptors = new ArrayList<ProblemDescriptor>();
-        PsiElement[] classes = PsiTreeUtil.collectElements(file, new PsiElementFilter() {
-            @Override
-            public boolean isAccepted(PsiElement psiElement) {
-                if (!(psiElement instanceof PsiClass)) {
-                    return false;
-                }
-                PsiClass psiClass = (PsiClass) psiElement;
-                for (PsiMethod psiMethod : psiClass.getMethods()) {
-                    if (getAnnotation(psiMethod, DB_NAME) != null) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-        });
+        PsiElement[] classes = PsiTreeUtil.collectElements(file, new AnnotatedPsiMethodFilter(DB_NAME));
         for (PsiElement psiClass : classes) {
             checkClass((PsiClass) psiClass, manager, problemDescriptors);
         }
@@ -112,7 +101,6 @@ public class DBClassesInspection extends AbstractDBInspection {
             );
         } else {
             checkModifiers(psiClass, inspectionManager, problemDescriptors);
-            //checkInject(psiClass, inspectionManager, problemDescriptors);
         }
     }
 
@@ -134,34 +122,6 @@ public class DBClassesInspection extends AbstractDBInspection {
                     new DeleteModifierFixAction(privateModifier),
                     ProblemHighlightType.GENERIC_ERROR, true));
         }
-    }
-
-    private void checkInject(PsiClass psiClass, InspectionManager inspectionManager, List<ProblemDescriptor> problemDescriptors) {
-        boolean haveInject = false;
-        for (PsiMethod psiMethod : psiClass.getConstructors()) {
-            if (getAnnotation(psiMethod, INJECT_NAME) != null || isEmptyConstructor(psiMethod)) {
-                haveInject = true;
-                break;
-            }
-        }
-        if (!haveInject) {
-            //noinspection ConstantConditions
-            problemDescriptors.add(inspectionManager.createProblemDescriptor(
-                    psiClass.getNameIdentifier(),
-                    "Class with methods annotated with @DB should be created by Injector" +
-                            " and have either one constructor annotated with @Inject" +
-                            " or empty non-private constructor.",
-                    true,
-                    LocalQuickFix.EMPTY_ARRAY,
-                    ProblemHighlightType.GENERIC_ERROR));
-
-        }
-    }
-
-    private boolean isEmptyConstructor(PsiMethod psiMethod) {
-        return !psiMethod.getModifierList().hasModifierProperty(PRIVATE_MODIFIER)
-                &&
-                psiMethod.getParameterList().getParametersCount() == 0;
     }
 
     private static class DeleteAnnotationFixAction extends IntentionAndQuickFixAction {
@@ -196,4 +156,26 @@ public class DBClassesInspection extends AbstractDBInspection {
         }
     }
 
+    private static class AnnotatedPsiMethodFilter implements PsiElementFilter {
+
+        private String name;
+
+        private AnnotatedPsiMethodFilter(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public boolean isAccepted(PsiElement psiElement) {
+            if (!(psiElement instanceof PsiClass)) {
+                return false;
+            }
+            PsiClass psiClass = (PsiClass) psiElement;
+            for (PsiMethod psiMethod : psiClass.getMethods()) {
+                if (getAnnotation(psiMethod, name) != null) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
 }

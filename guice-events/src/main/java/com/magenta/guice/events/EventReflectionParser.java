@@ -37,6 +37,10 @@ class EventReflectionParser {
         writeLock = rwl.writeLock();
     }
 
+    private EventReflectionParser() {
+    }
+
+
     private static HandlerAnnotation getOrParseAnnotationInfo(Annotation a) throws CyclicFilterAnnotationException {
         Class<? extends Annotation> ac = a.annotationType();
         HandlerAnnotation c = annotationInfos.get(ac);
@@ -130,4 +134,5 @@ class EventReflectionParser {
         return new HandlerMethod<T>(matchers, classMatchers, new ReflectionHandlerInvocator<Object, T>(method));
 //        return new HandlerMethod<T>(matchers, classMatchers, new ClassgenHandlerInvocator<Object, T>(method));
     }
+
 }
