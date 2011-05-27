@@ -32,6 +32,7 @@ public class EntityManagerInspection extends AbstractDBInspection {
     private static final String EM_TYPE = "EntityManager";
     private static final String EM_FULL_TYPE = "javax.persistence.EntityManager";
     private static final String TRANSACTION_ATTRIBUTE = "transaction";
+    private static final String DB_FIX_ACTIONS_FAMILY = "@DB fix actions";
 
 
     @NotNull
@@ -80,16 +81,7 @@ public class EntityManagerInspection extends AbstractDBInspection {
     @Override
     public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
         List<ProblemDescriptor> problemDescriptors = new ArrayList<ProblemDescriptor>();
-        PsiElement[] classes = PsiTreeUtil.collectElements(file, new PsiElementFilter() {
-            @Override
-            public boolean isAccepted(PsiElement psiElement) {
-                if (!(psiElement instanceof PsiClass)) {
-                    return false;
-                }
-                PsiClass psiClass = (PsiClass) psiElement;
-                return !(psiClass.isEnum() || psiClass.isInterface());
-            }
-        });
+        PsiElement[] classes = PsiTreeUtil.collectElements(file, new PsiClassesFilter());
         for (PsiElement psiClass : classes) {
             checkClass((PsiClass) psiClass, manager, problemDescriptors, isOnTheFly);
         }
@@ -285,29 +277,7 @@ public class EntityManagerInspection extends AbstractDBInspection {
     }
 
     private PsiElement[] getFieldUsages(final PsiField emField, PsiMethod psiMethod) {
-        return PsiTreeUtil.collectElements(psiMethod.getBody(), new PsiElementFilter() {
-            @Override
-            public boolean isAccepted(PsiElement element) {
-                if (element instanceof PsiMethodCallExpression) {
-                    PsiMethodCallExpression methodCall = (PsiMethodCallExpression) element;
-                    PsiExpression qualifierExpression = methodCall.getMethodExpression().getQualifierExpression();
-                    if (qualifierExpression != null) {
-                        PsiReference reference = qualifierExpression.getReference();
-                        if (reference != null && reference.isReferenceTo(emField)) {
-                            return true;
-                        }
-                    }
-                    PsiExpressionList argumentList = methodCall.getArgumentList();
-                    for (PsiExpression psiExpression : argumentList.getExpressions()) {
-                        PsiReference reference = psiExpression.getReference();
-                        if ((reference != null) && reference.isReferenceTo(emField)) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
-        });
+        return PsiTreeUtil.collectElements(psiMethod.getBody(), new PsiRefToFilter(emField));
     }
 
 
@@ -338,7 +308,7 @@ public class EntityManagerInspection extends AbstractDBInspection {
         @NotNull
         @Override
         public String getFamilyName() {
-            return "@DB fix actions";
+            return DB_FIX_ACTIONS_FAMILY;
         }
 
         @Override
@@ -364,30 +334,32 @@ public class EntityManagerInspection extends AbstractDBInspection {
         @NotNull
         @Override
         public String getFamilyName() {
-            return "@DB fix actions";
+            return DB_FIX_ACTIONS_FAMILY;
         }
 
         @Override
         public void applyFix(Project project, PsiFile psiFile, @Nullable Editor editor) {
             PsiAnnotationOwner modList = psiAnnotation.getOwner();
             psiAnnotation.delete();
-            PsiElement[] psiElements = PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
-                @Override
-                public boolean isAccepted(PsiElement element) {
-                    if (element instanceof PsiImportStaticStatement) {
-                        PsiImportStaticStatement importStatement = (PsiImportStaticStatement) element;
-                        String referenceName = importStatement.getReferenceName();
-                        if (referenceName != null && referenceName.equals("REQUIRED")) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-            });
+            PsiElement[] psiElements = PsiTreeUtil.collectElements(psiFile, new RequiredStaticImportFilter());
             if (psiElements.length == 0) {
                 modList.addAnnotation("DB(transaction = DB.Transaction.REQUIRED)");
             } else {
                 modList.addAnnotation("DB(transaction = REQUIRED)");
+            }
+        }
+
+        private static class RequiredStaticImportFilter implements PsiElementFilter {
+            @Override
+            public boolean isAccepted(PsiElement element) {
+                if (element instanceof PsiImportStaticStatement) {
+                    PsiImportStaticStatement importStatement = (PsiImportStaticStatement) element;
+                    String referenceName = importStatement.getReferenceName();
+                    if (referenceName != null && referenceName.equals("REQUIRED")) {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
     }
@@ -409,7 +381,7 @@ public class EntityManagerInspection extends AbstractDBInspection {
         @NotNull
         @Override
         public String getFamilyName() {
-            return "@DB fix actions";
+            return DB_FIX_ACTIONS_FAMILY;
         }
 
         @Override
@@ -437,7 +409,7 @@ public class EntityManagerInspection extends AbstractDBInspection {
         @NotNull
         @Override
         public String getFamilyName() {
-            return "@DB fix actions";
+            return DB_FIX_ACTIONS_FAMILY;
         }
 
         @Override
@@ -446,4 +418,44 @@ public class EntityManagerInspection extends AbstractDBInspection {
         }
     }
 
+    private static class PsiClassesFilter implements PsiElementFilter {
+        @Override
+        public boolean isAccepted(PsiElement psiElement) {
+            if (!(psiElement instanceof PsiClass)) {
+                return false;
+            }
+            PsiClass psiClass = (PsiClass) psiElement;
+            return !(psiClass.isEnum() || psiClass.isInterface());
+        }
+    }
+
+    private static class PsiRefToFilter implements PsiElementFilter {
+        private final PsiField emField;
+
+        public PsiRefToFilter(PsiField emField) {
+            this.emField = emField;
+        }
+
+        @Override
+        public boolean isAccepted(PsiElement element) {
+            if (element instanceof PsiMethodCallExpression) {
+                PsiMethodCallExpression methodCall = (PsiMethodCallExpression) element;
+                PsiExpression qualifierExpression = methodCall.getMethodExpression().getQualifierExpression();
+                if (qualifierExpression != null) {
+                    PsiReference reference = qualifierExpression.getReference();
+                    if (reference != null && reference.isReferenceTo(emField)) {
+                        return true;
+                    }
+                }
+                PsiExpressionList argumentList = methodCall.getArgumentList();
+                for (PsiExpression psiExpression : argumentList.getExpressions()) {
+                    PsiReference reference = psiExpression.getReference();
+                    if ((reference != null) && reference.isReferenceTo(emField)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
 }

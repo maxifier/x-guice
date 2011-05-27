@@ -140,4 +140,7 @@ public class ClassUtils {
 
         protected abstract ClassLoader doGetClassLoader() throws Throwable;
     }
+
+    private ClassUtils() {
+    }
 }

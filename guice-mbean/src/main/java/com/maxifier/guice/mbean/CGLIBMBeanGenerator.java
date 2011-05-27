@@ -40,24 +40,14 @@ public class CGLIBMBeanGenerator implements MBeanGenerator {
             throw new MBeanGenerationException("MBean pretender have no methods, annotated with @MBeanMethod");
         }
         InterfaceMaker interfaceMaker = new InterfaceMaker();
-        interfaceMaker.setNamingPolicy(new NamingPolicy() {
-            @Override
-            public String getClassName(String prefix, String source, Object key, Predicate names) {
-                return mbeanInterfaceName;
-            }
-        });
+        interfaceMaker.setNamingPolicy(new DefinedNameNamingPolicy(mbeanInterfaceName));
         for (Method method : methods) {
             interfaceMaker.add(method);
         }
         Class mbeanInterface = interfaceMaker.create();
 
         Enhancer enhancer = new Enhancer();
-        enhancer.setNamingPolicy(new NamingPolicy() {
-            @Override
-            public String getClassName(String prefix, String source, Object key, Predicate names) {
-                return mbeanName;
-            }
-        });
+        enhancer.setNamingPolicy(new DefinedNameNamingPolicy(mbeanName));
         enhancer.setSuperclass(pretenderClass);
         enhancer.setInterfaces(new Class[]{mbeanInterface});
         enhancer.setCallback(new MethodInterceptor() {
@@ -71,4 +61,16 @@ public class CGLIBMBeanGenerator implements MBeanGenerator {
         return (T) enhancer.create();
     }
 
+    private static class DefinedNameNamingPolicy implements NamingPolicy {
+        private final String name;
+
+        public DefinedNameNamingPolicy(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String getClassName(String prefix, String source, Object key, Predicate names) {
+            return name;
+        }
+    }
 }
