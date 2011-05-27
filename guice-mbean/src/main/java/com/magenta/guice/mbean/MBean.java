@@ -7,15 +7,10 @@ import java.lang.annotation.Target;
 
 
 /**
- * Project: Maxifier
- * Date: 28.03.2008
- * Time: 8:57:43
- * <p/>
- * Copyright (c) 1999-2008 Magenta Corporation Ltd. All Rights Reserved.
- * Magenta Technology proprietary and confidential.
- * Use is subject to license terms.
+ * Old annotation for mbeans
  *
  * @author Aleksey Didik
+ * @deprecated use com.maxifier.guice.mbean.MBean instead
  */
 @Deprecated
 @Retention(RetentionPolicy.RUNTIME)

@@ -6,17 +6,17 @@ import com.google.inject.Module;
 import javax.management.MBeanServer;
 import java.lang.management.ManagementFactory;
 
-public final class MBeanManagerModule extends AbstractModule {
+public final class MBeanModule extends AbstractModule {
 
     private final String domain;
     private final MBeanServer mbeanServer;
 
     public static Module platform(String domain) {
-        return new MBeanManagerModule(domain, ManagementFactory.getPlatformMBeanServer());
+        return new MBeanModule(domain, ManagementFactory.getPlatformMBeanServer());
     }
 
     public static Module server(String domain, MBeanServer mbeanServer) {
-        return new MBeanManagerModule(domain, mbeanServer);
+        return new MBeanModule(domain, mbeanServer);
     }
 
     public static Module noOperations() {
@@ -29,7 +29,7 @@ public final class MBeanManagerModule extends AbstractModule {
     }
 
 
-    public MBeanManagerModule(String domain, MBeanServer mbeanServer) {
+    public MBeanModule(String domain, MBeanServer mbeanServer) {
         this.domain = domain;
         this.mbeanServer = mbeanServer;
     }

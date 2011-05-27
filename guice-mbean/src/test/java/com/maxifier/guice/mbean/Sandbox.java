@@ -3,6 +3,9 @@ package com.maxifier.guice.mbean;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.matcher.Matchers;
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 
 /**
  * Created by: Aleksey Didik
@@ -21,8 +24,15 @@ public class Sandbox {
         Injector inj = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
-                install(MBeanManagerModule.platform("test"));
+                install(MBeanModule.platform("test"));
                 bind(Foo.class).asEagerSingleton();
+                //bind interceptor to be sure
+                bindInterceptor(Matchers.any(), Matchers.any(), new MethodInterceptor() {
+                    @Override
+                    public Object invoke(MethodInvocation invocation) throws Throwable {
+                        return invocation.proceed();
+                    }
+                });
             }
         });
         Thread.sleep(100000000L);

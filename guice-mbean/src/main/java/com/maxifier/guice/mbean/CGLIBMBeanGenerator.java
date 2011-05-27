@@ -23,7 +23,8 @@ import java.lang.reflect.Method;
  */
 public class CGLIBMBeanGenerator implements MBeanGenerator {
 
-    private AnnotatedMethodCache methodCache = new AnnotatedMethodCache(com.magenta.guice.mbean.MBeanMethod.class, MBeanMethod.class);
+    @SuppressWarnings({"unchecked"})
+    private AnnotatedMethodCache methodCache = new AnnotatedMethodCache(MBeanMethod.class);
 
     @Override
     public <T> T makeMBean(final T mbeanPretender) throws MBeanGenerationException {

@@ -47,8 +47,8 @@ public class DoubleStartTest {
                 bind(Foo.class).asEagerSingleton();
             }
         };
-        Guice.createInjector(new MBeanManagerModule("test", server), module);
-        Guice.createInjector(new MBeanManagerModule("test", server), module);
+        Guice.createInjector(new MBeanModule("test", server), module);
+        Guice.createInjector(new MBeanModule("test", server), module);
         verify(server, times(3)).registerMBean(any(), any(ObjectName.class));
         verify(server).unregisterMBean(any(ObjectName.class));
     }

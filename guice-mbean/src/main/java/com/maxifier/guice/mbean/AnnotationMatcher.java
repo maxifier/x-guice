@@ -16,7 +16,7 @@ import java.lang.annotation.Annotation;
  *
  * @author Aleksey Didik
  */
-public final class AnnotationMatcher extends AbstractMatcher<TypeLiteral<?>> {
+final class AnnotationMatcher extends AbstractMatcher<TypeLiteral<?>> {
 
     private final Class<? extends Annotation>[] annotations;
 

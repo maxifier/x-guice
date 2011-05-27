@@ -31,24 +31,17 @@ public class CGLIBMBeanGeneratorTest {
         Foo mbeanPretender = new Foo();
         Foo mbean = cglibmBeanGenerator.makeMBean(mbeanPretender);
         mbean.hello();
-        mbean.hello2();
         assertTrue(mbeanPretender.called, "mbeanPretender method have to be called");
-        assertTrue(mbeanPretender.called2, "mbeanPretender method have to be called");
     }
 
     static class Foo {
 
         boolean called;
-        boolean called2;
 
         @MBeanMethod
         void hello() {
             called = true;
         }
 
-        @com.magenta.guice.mbean.MBeanMethod
-        void hello2() {
-            called2 = true;
-        }
     }
 }

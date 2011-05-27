@@ -20,7 +20,7 @@ import java.util.HashSet;
  *
  * @author Aleksey Didik
  */
-public final class MBeanTypeListener implements TypeListener {
+final class MBeanTypeListener implements TypeListener {
 
     private MBeanManager manager;
     private final Collection<Object> registrationQueue = new HashSet<Object>();
