@@ -60,16 +60,16 @@ public class MBeanManagerImpl implements MBeanManager {
                 mbeanServer.registerMBean(mbean, objectName);
             }
             mbeans.add(objectName);
-        } catch (MalformedObjectNameException e) {                    //TODO (didik) object info into warns
-            logger.warn("Unable to register mbean, wrong name", e);
+        } catch (MalformedObjectNameException e) {
+            logger.warn(String.format("Unable to register %s mbean, wrong name", mbeanPretender), e);
         } catch (MBeanRegistrationException e) {
-            logger.warn("Unable to register mbean", e);
+            logger.warn(String.format("Unable to register mbean %s", mbeanPretender), e);
         } catch (NotCompliantMBeanException e) {
-            logger.warn("Unable to register mbean, wrong mbean class", e);
+            logger.warn(String.format("Unable to register mbean %s, wrong mbean class", mbeanPretender), e);
         } catch (InstanceAlreadyExistsException e) {
-            logger.warn("Unable to register mbean, instance already exists", e);
+            logger.warn(String.format("Unable to register mbean %s, instance already exists", mbeanPretender), e);
         } catch (MBeanGenerationException e) {
-            logger.warn("Unable to register mbean, instance is not compliant with JMX spec and mbean generation was failed", e);
+            logger.warn(String.format("Unable to register mbean %s, instance is not compliant with JMX spec and mbean generation was failed", mbeanPretender), e);
         }
     }
 
