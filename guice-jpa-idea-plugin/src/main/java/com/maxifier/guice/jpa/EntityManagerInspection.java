@@ -94,13 +94,24 @@ public class EntityManagerInspection extends AbstractDBInspection {
             return;
         }
         final PsiField emField = checkEMField(psiClass, inspectionManager, problemDescriptors, onTheFly);
-        if (emField != null) {
+        //check is emField injected
+        boolean isEmInjected = isEmInjected(psiClass, emField);
+        if (emField != null && isEmInjected) {
             checkUsageWithoutDB(psiClass, inspectionManager, problemDescriptors, emField, onTheFly);
             checkNecessityOfTransaction(psiClass, emField, inspectionManager, problemDescriptors, onTheFly);
             checkRawTransactionUsage(psiClass, emField, inspectionManager, problemDescriptors, onTheFly);
         }
         //check annotated but without usages
         checkAnnotatedWithoutUsages(psiClass, inspectionManager, problemDescriptors, emField, onTheFly);
+    }
+
+    private boolean isEmInjected(PsiClass psiClass, PsiField emField) {
+//        PsiMethod[] constructors = psiClass.getConstructors();
+//        for (PsiMethod constructor : constructors) {
+//            PsiElement[] fieldUsages = getFieldUsages(emField, constructor);
+//
+//        }
+        return true;
     }
 
     private void checkRawTransactionUsage(PsiClass psiClass,
@@ -116,6 +127,7 @@ public class EntityManagerInspection extends AbstractDBInspection {
                         problemDescriptors.add(inspectionManager.createProblemDescriptor(
                                 emFieldUsage,
                                 "Usage of getTransaction() or joinTransaction() methods is disallowed for @DB annotated methods," +
+
                                         " use @DB(transaction=REQUIRED) instead.",
                                 onTheFly,
                                 LocalQuickFix.EMPTY_ARRAY,

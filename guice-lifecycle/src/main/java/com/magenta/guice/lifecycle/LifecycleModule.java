@@ -5,6 +5,7 @@ import com.google.inject.Binder;
 import com.google.inject.ProvisionException;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.AbstractMatcher;
+import com.google.inject.matcher.Matchers;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
@@ -39,6 +40,7 @@ public class LifecycleModule extends AbstractModule {
         AnnotatedMethodMatcher methodMatcher = new AnnotatedMethodMatcher(PostConstruct.class);
         LifecycleTypeListener listener = new LifecycleTypeListener(cache);
         bindListener(methodMatcher, listener);
+        bindInterceptor(Matchers.any(), Matchers.annotatedWith(SafeShutdown.class), new SafeShutdownInterceptor());
     }
 
     static class AnnotatedMethodMatcher extends AbstractMatcher<TypeLiteral<?>> {
