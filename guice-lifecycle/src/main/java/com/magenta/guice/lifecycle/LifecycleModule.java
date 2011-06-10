@@ -1,9 +1,6 @@
 package com.magenta.guice.lifecycle;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Binder;
-import com.google.inject.ProvisionException;
-import com.google.inject.TypeLiteral;
+import com.google.inject.*;
 import com.google.inject.matcher.AbstractMatcher;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.spi.InjectionListener;
@@ -11,6 +8,7 @@ import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,11 +34,15 @@ public class LifecycleModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        AnnotatedMethodCache cache = new AnnotatedMethodCache(PostConstruct.class);
-        AnnotatedMethodMatcher methodMatcher = new AnnotatedMethodMatcher(PostConstruct.class);
-        LifecycleTypeListener listener = new LifecycleTypeListener(cache);
-        bindListener(methodMatcher, listener);
-        bindInterceptor(Matchers.any(), Matchers.annotatedWith(SafeShutdown.class), new SafeShutdownInterceptor());
+        //@PostConstruct
+        bindListener(
+                new AnnotatedMethodMatcher(PostConstruct.class),
+                new PostConstructTypeListener(PostConstruct.class)
+        );
+        //@ShutdownSafe
+        bindInterceptor(Matchers.any(), Matchers.annotatedWith(ShutdownSafe.class), new SafeShutdownInterceptor());
+        //Destroy container during JVM shutdown
+        bind(ShutdownHook.class).asEagerSingleton();
     }
 
     static class AnnotatedMethodMatcher extends AbstractMatcher<TypeLiteral<?>> {
@@ -82,18 +84,17 @@ public class LifecycleModule extends AbstractModule {
 
     }
 
-    private static class LifecycleTypeListener implements TypeListener {
+    private static class PostConstructTypeListener implements TypeListener {
 
         private final AnnotatedMethodCache cache;
 
-        public LifecycleTypeListener(AnnotatedMethodCache cache) {
-            this.cache = cache;
+        public PostConstructTypeListener(Class<? extends Annotation>... annotationClasses) {
+            this.cache = new AnnotatedMethodCache(annotationClasses);
         }
 
         @Override
         public <I> void hear(TypeLiteral<I> type, TypeEncounter<I> encounter) {
             encounter.register(new InjectionListener<I>() {
-                @SuppressWarnings({"ThrowInsideCatchBlockWhichIgnoresCaughtException"})
                 @Override
                 public void afterInjection(I injectee) {
                     Method[] methods = cache.get(injectee.getClass());
@@ -101,8 +102,7 @@ public class LifecycleModule extends AbstractModule {
                         try {
                             method.invoke(injectee);
                         } catch (InvocationTargetException ie) {
-                            Throwable e = ie.getTargetException();
-                            throw new ProvisionException(e.getMessage(), e);
+                            throw new ProvisionException(ie.getTargetException().getMessage(), ie.getTargetException());
                         } catch (IllegalAccessException e) {
                             throw new ProvisionException(e.getMessage(), e);
                         }
@@ -111,5 +111,18 @@ public class LifecycleModule extends AbstractModule {
             });
         }
 
+    }
+
+    static class ShutdownHook {
+
+        @Inject
+        void register(final Injector injector) {
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    Lifecycle.destroy(injector);
+                }
+            });
+        }
     }
 }

@@ -18,6 +18,6 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface SafeShutdown {
+public @interface ShutdownSafe {
     //int timeout() default 0;
 }

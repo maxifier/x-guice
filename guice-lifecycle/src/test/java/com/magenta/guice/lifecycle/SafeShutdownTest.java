@@ -42,7 +42,7 @@ public class SafeShutdownTest {
 
     static class Foo {
 
-        @SafeShutdown
+        @ShutdownSafe
         void hello(int a) {
             try {
                 Thread.sleep(1000 * 60 * (new Random().nextInt(3) + 1));
