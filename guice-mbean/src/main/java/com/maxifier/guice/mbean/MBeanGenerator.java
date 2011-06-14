@@ -13,6 +13,6 @@ package com.maxifier.guice.mbean;
  */
 public interface MBeanGenerator {
 
-    <T> T makeMBean(T mbeanPretender) throws MBeanGenerationException;
+    Object makeMBean(Object mbeanPretender) throws MBeanGenerationException;
 
 }

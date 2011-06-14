@@ -21,7 +21,7 @@ public class CGLIBMBeanGeneratorTest {
     public void testNameCompliance() throws Exception {
         CGLIBMBeanGenerator cglibmBeanGenerator = new CGLIBMBeanGenerator();
         Foo mbeanPretender = new Foo();
-        Foo mbean = cglibmBeanGenerator.makeMBean(mbeanPretender);
+        Object mbean = cglibmBeanGenerator.makeMBean(mbeanPretender);
         MBeanManagerImpl.checkCompliantion(mbean);
     }
 
@@ -29,8 +29,8 @@ public class CGLIBMBeanGeneratorTest {
     public void testMethodDelegation() throws Exception {
         CGLIBMBeanGenerator cglibmBeanGenerator = new CGLIBMBeanGenerator();
         Foo mbeanPretender = new Foo();
-        Foo mbean = cglibmBeanGenerator.makeMBean(mbeanPretender);
-        mbean.hello();
+        Object mbean = cglibmBeanGenerator.makeMBean(mbeanPretender);
+        Foo.class.getMethod("hello").invoke(mbean);
         assertTrue(mbeanPretender.called, "mbeanPretender method have to be called");
     }
 

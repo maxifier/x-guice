@@ -27,9 +27,8 @@ public class CGLIBMBeanGenerator implements MBeanGenerator {
     private AnnotatedMethodCache methodCache = new AnnotatedMethodCache(MBeanMethod.class);
 
     @Override
-    public <T> T makeMBean(final T mbeanPretender) throws MBeanGenerationException {
-        @SuppressWarnings({"unchecked"}) //just getClass feature
-                Class<T> pretenderClass = (Class<T>) mbeanPretender.getClass();
+    public Object makeMBean(final Object mbeanPretender) throws MBeanGenerationException {
+        Class<?> pretenderClass = mbeanPretender.getClass();
         String pretenderClassName = pretenderClass.getName();
         String hash = Integer.toHexString(mbeanPretender.hashCode());
         final String mbeanName = pretenderClassName + "$$" + hash;
@@ -48,17 +47,12 @@ public class CGLIBMBeanGenerator implements MBeanGenerator {
 
         Enhancer enhancer = new Enhancer();
         enhancer.setNamingPolicy(new DefinedNameNamingPolicy(mbeanName));
-        enhancer.setSuperclass(pretenderClass);
+        //enhancer.setSuperclass(pretenderClass);
         enhancer.setInterfaces(new Class[]{mbeanInterface});
-        enhancer.setCallback(new MethodInterceptor() {
-            @Override
-            public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-                return method.invoke(mbeanPretender, args);
-            }
-        });
+        enhancer.setCallback(new MBeanMethodInterceptor(mbeanPretender));
         //we know the result type
         //noinspection unchecked
-        return (T) enhancer.create();
+        return enhancer.create();
     }
 
     private static class DefinedNameNamingPolicy implements NamingPolicy {
@@ -71,6 +65,22 @@ public class CGLIBMBeanGenerator implements MBeanGenerator {
         @Override
         public String getClassName(String prefix, String source, Object key, Predicate names) {
             return name;
+        }
+    }
+
+    private static class MBeanMethodInterceptor implements MethodInterceptor {
+
+        private final Object mbeanPretender;
+        private final Class<?> mbeanPretenderClass;
+
+        public MBeanMethodInterceptor(Object mbeanPretender) {
+            this.mbeanPretender = mbeanPretender;
+            this.mbeanPretenderClass = mbeanPretender.getClass();
+        }
+
+        @Override
+        public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+            return mbeanPretenderClass.getMethod(method.getName(), method.getParameterTypes()).invoke(mbeanPretender, args);
         }
     }
 }

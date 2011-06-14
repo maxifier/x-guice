@@ -39,10 +39,14 @@ public class Sandbox {
     }
 
     @MBean(name = "service=Foo")
-    static class Foo {
+    public static class Foo {
+
+//        @Inject
+//        Foo(Injector inj) {
+//        }
 
         @MBeanMethod
-        String name() {
+        public String name() {
             return "Foo";
         }
     }

@@ -38,15 +38,22 @@ public class MBeanManagerImpl implements MBeanManager {
     public void register(Iterable<Object> mbeans) {
         for (Object mbean : mbeans) {
             String name = resolveName(mbean);
+            if (!checkCompliantion(mbean)) {
+                try {
+                    mbean = mbeanGenerator.makeMBean(mbean);
+                } catch (MBeanGenerationException e) {
+                    logger.warn(String.format("Unable to register mbean %s," +
+                            " instance is not compliant with JMX spec and mbean generation has been failed", mbean), e);
+                }
+            }
             register(name, mbean);
         }
     }
 
     @Override
-    public synchronized void register(String name, Object mbeanPretender) {
+    public synchronized void register(String name, Object mbean) {
         try {
             ObjectName objectName = prepareObjectName(name);
-            Object mbean = makeMBean(mbeanPretender);
             try {
                 mbeanServer.registerMBean(mbean, objectName);
             } catch (InstanceAlreadyExistsException e) {
@@ -60,20 +67,14 @@ public class MBeanManagerImpl implements MBeanManager {
             }
             mbeans.add(objectName);
         } catch (MalformedObjectNameException e) {
-            logger.warn(String.format("Unable to register %s mbean, wrong name", mbeanPretender), e);
+            logger.warn(String.format("Unable to register %s mbean, wrong name", mbean), e);
         } catch (MBeanRegistrationException e) {
-            logger.warn(String.format("Unable to register mbean %s", mbeanPretender), e);
+            logger.warn(String.format("Unable to register mbean %s", mbean), e);
         } catch (NotCompliantMBeanException e) {
-            logger.warn(String.format("Unable to register mbean %s, wrong mbean class", mbeanPretender), e);
+            logger.warn(String.format("Unable to register mbean %s, wrong mbean class", mbean), e);
         } catch (InstanceAlreadyExistsException e) {
-            logger.warn(String.format("Unable to register mbean %s, instance already exists", mbeanPretender), e);
-        } catch (MBeanGenerationException e) {
-            logger.warn(String.format("Unable to register mbean %s, instance is not compliant with JMX spec and mbean generation was failed", mbeanPretender), e);
+            logger.warn(String.format("Unable to register mbean %s, instance already exists", mbean), e);
         }
-    }
-
-    Object makeMBean(Object mbeanPretender) throws MBeanGenerationException {
-        return checkCompliantion(mbeanPretender) ? mbeanPretender : mbeanGenerator.makeMBean(mbeanPretender);
     }
 
     @Override
