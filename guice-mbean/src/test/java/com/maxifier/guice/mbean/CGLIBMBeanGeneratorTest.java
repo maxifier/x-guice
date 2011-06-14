@@ -30,16 +30,16 @@ public class CGLIBMBeanGeneratorTest {
         CGLIBMBeanGenerator cglibmBeanGenerator = new CGLIBMBeanGenerator();
         Foo mbeanPretender = new Foo();
         Object mbean = cglibmBeanGenerator.makeMBean(mbeanPretender);
-        Foo.class.getMethod("hello").invoke(mbean);
+        mbean.getClass().getMethod("hello").invoke(mbean);
         assertTrue(mbeanPretender.called, "mbeanPretender method have to be called");
     }
 
-    static class Foo {
+    public static class Foo {
 
         boolean called;
 
         @MBeanMethod
-        void hello() {
+        public void hello() {
             called = true;
         }
 
