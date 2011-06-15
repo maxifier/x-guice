@@ -1,7 +1,7 @@
 package com.maxifier.guice.mbean;
 
 
-final class NoOperationsMBeanManager implements MBeanManager {
+public final class NoOperationsMBeanManager implements MBeanManager {
     @Override
     public void register(Object... mbeans) {
         //NOP

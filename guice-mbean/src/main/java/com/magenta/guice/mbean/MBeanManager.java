@@ -1,6 +1,7 @@
-package com.maxifier.guice.mbean;
+package com.magenta.guice.mbean;
 
 import com.google.inject.ImplementedBy;
+import com.maxifier.guice.mbean.NoOperationsMBeanManager;
 
 /**
  * Project: Maxifier
@@ -12,9 +13,11 @@ import com.google.inject.ImplementedBy;
  * Use is subject to license terms.
  *
  * @author Aleksey Didik
+ * @deprecated use com.maxifier.guice.mbean.MBeanManager instead
  */
+@Deprecated
 @ImplementedBy(NoOperationsMBeanManager.class)
-public interface MBeanManager extends com.magenta.guice.mbean.MBeanManager {
+public interface MBeanManager {
     void register(Object... mbeans);
 
     void register(Iterable<Object> mbeans);
@@ -27,6 +30,6 @@ public interface MBeanManager extends com.magenta.guice.mbean.MBeanManager {
 
     void unregisterAll();
 
-    MBeanManager NO_OPERATIONS = new NoOperationsMBeanManager();
+    NoOperationsMBeanManager NO_OPERATIONS = new NoOperationsMBeanManager();
 
 }
