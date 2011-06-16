@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 @Singleton
-public class MBeanManagerImpl implements MBeanManager {
+public class MBeanManagerImpl implements MBeanManager, com.magenta.guice.mbean.MBeanManager {
     private static Logger logger = LoggerFactory.getLogger(MBeanManagerImpl.class);
 
     private final Collection<ObjectName> mbeans = new HashSet<ObjectName>();

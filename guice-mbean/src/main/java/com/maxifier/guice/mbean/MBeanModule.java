@@ -56,9 +56,12 @@ public final class MBeanModule extends AbstractModule {
 
     @Override
     protected void configure() {
+
         MBeanManagerImpl impl = new MBeanManagerImpl(domain, mbeanServer, new CGLIBMBeanGenerator());
-        bind(MBeanManager.class).toInstance(impl);
         bind(com.magenta.guice.mbean.MBeanManager.class).toInstance(impl);
+        bind(MBeanManager.class).toInstance(impl);
+
+
         MBeanTypeListener listener = new MBeanTypeListener();
         requestInjection(listener);
         //noinspection unchecked

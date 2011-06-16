@@ -14,7 +14,7 @@ import com.google.inject.ImplementedBy;
  * @author Aleksey Didik
  */
 @ImplementedBy(NoOperationsMBeanManager.class)
-public interface MBeanManager extends com.magenta.guice.mbean.MBeanManager {
+public interface MBeanManager {
     void register(Object... mbeans);
 
     void register(Iterable<Object> mbeans);
