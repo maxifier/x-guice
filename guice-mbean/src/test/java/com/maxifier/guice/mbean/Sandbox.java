@@ -7,6 +7,9 @@ import com.google.inject.matcher.Matchers;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
+import javax.inject.Inject;
+import java.lang.management.ManagementFactory;
+
 /**
  * Created by: Aleksey Didik
  * Date: 5/26/11
@@ -35,19 +38,23 @@ public class Sandbox {
                 });
             }
         });
+
+        Guice.createInjector(MBeanModule.server("<domain-name>", ManagementFactory.getPlatformMBeanServer()));
         Thread.sleep(100000000L);
     }
 
     @MBean(name = "service=Foo")
-    public static class Foo {
+    public class Foo {
 
-//        @Inject
-//        Foo(Injector inj) {
-//        }
+        private final MBeanManager mBeanManager;
 
-        @MBeanMethod
-        public String name() {
-            return "Foo";
+        @Inject
+        Foo(MBeanManager mBeanManager) {
+            this.mBeanManager = mBeanManager;
+        }
+
+        public void make() {
+            // mBeanManager.register("service=Foo Robots", new FooRobot());
         }
     }
 }
