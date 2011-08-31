@@ -1,6 +1,7 @@
 package com.magenta.guice.jpa;
 
 import com.google.inject.AbstractModule;
+
 /*
 * Project: Maxifier
 * Author: Aleksey Didik
@@ -10,7 +11,6 @@ import com.google.inject.AbstractModule;
 * Magenta Technology proprietary and confidential.
 * Use is subject to license terms.
 */
-
 public class JPAModule extends AbstractModule {
     @Override
     protected void configure() {
