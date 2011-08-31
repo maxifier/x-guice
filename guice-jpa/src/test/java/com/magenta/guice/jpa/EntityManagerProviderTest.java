@@ -28,6 +28,7 @@ public class EntityManagerProviderTest {
     @Test
     public void testInjection() throws Exception {
 
+
         EntityManager mockEM = mock(EntityManager.class);
         final EntityManagerFactory mockEMF = mock(EntityManagerFactory.class);
         when(mockEMF.createEntityManager()).thenReturn(mockEM);
