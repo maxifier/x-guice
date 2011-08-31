@@ -70,7 +70,7 @@
                 <configuration>
                     <tagBase>svn://svn.maxifier.com/maxifier-projects/x-guice/tags</tagBase>
                     <preparationGoals>clean install</preparationGoals>
-                    <goals>deploy sonar:sonar</goals>
+                    <goals>deploy</goals>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                 </configuration>
             </plugin>
