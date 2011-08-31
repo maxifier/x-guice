@@ -8,6 +8,7 @@ import org.testng.annotations.Test;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 
 import static org.mockito.Mockito.*;
 import static org.testng.Assert.fail;
@@ -30,6 +31,8 @@ public class EntityManagerProviderTest {
         EntityManager mockEM = mock(EntityManager.class);
         final EntityManagerFactory mockEMF = mock(EntityManagerFactory.class);
         when(mockEMF.createEntityManager()).thenReturn(mockEM);
+        EntityTransaction entityTransaction = mock(EntityTransaction.class);
+        when(mockEM.getTransaction()).thenReturn(entityTransaction);
 
         Injector inj = Guice.createInjector(new AbstractModule() {
             @Override

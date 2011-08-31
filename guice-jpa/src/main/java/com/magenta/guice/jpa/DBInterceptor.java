@@ -2,11 +2,11 @@ package com.magenta.guice.jpa;
 
 import com.google.inject.Binder;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.matcher.Matchers;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
-import javax.inject.Provider;
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -112,6 +112,7 @@ final class DBInterceptor implements MethodInterceptor, Provider<EntityManager> 
         DBInterceptor instance = new DBInterceptor();
         binder.requestInjection(instance);
         binder.bindInterceptor(Matchers.any(), Matchers.annotatedWith(DB.class), instance);
+        binder.bind(EntityManager.class).toProvider(instance);
     }
 
 
