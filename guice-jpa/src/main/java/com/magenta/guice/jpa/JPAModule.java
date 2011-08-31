@@ -1,8 +1,6 @@
 package com.magenta.guice.jpa;
 
 import com.google.inject.AbstractModule;
-
-import javax.persistence.EntityManager;
 /*
 * Project: Maxifier
 * Author: Aleksey Didik
@@ -17,6 +15,5 @@ public class JPAModule extends AbstractModule {
     @Override
     protected void configure() {
         DBInterceptor.bind(binder());
-        bind(EntityManager.class).toProvider(EntityManagerProvider.class);
     }
 }

@@ -4,6 +4,8 @@ import junit.framework.TestCase;
 import org.aopalliance.intercept.MethodInvocation;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 
 import static org.mockito.Mockito.*;
 
@@ -22,39 +24,18 @@ public class DBInterceptorTest extends TestCase {
     public void testSimpleOwner() throws Throwable {
         MethodInvocation mi = mock(MethodInvocation.class);
         when(mi.getMethod()).thenReturn(DbAnnotationTestClass.class.getMethod("testMethod"));
-        EntityManagerProvider emp = mock(EntityManagerProvider.class);
-        EntityManager em = mock(EntityManager.class);
-        when(emp.getFromInterceptor()).thenReturn(new EntityManagerProvider.Info(em, true));
         DBInterceptor interceptor = new DBInterceptor();
-        interceptor.setEntityManagerProvider(emp);
+        EntityManagerFactory emf = mock(EntityManagerFactory.class);
+        EntityManager em = mock(EntityManager.class);
+        EntityTransaction transaction = mock(EntityTransaction.class);
+        when(em.getTransaction()).thenReturn(transaction);
+        when(emf.createEntityManager()).thenReturn(em);
+        interceptor.setEmf(emf);
         interceptor.invoke(mi);
         //verify invocation
         verify(mi).proceed();
         //verify get EM
-        verify(emp).getFromInterceptor();
-        //verify close EM
         verify(em).close();
-        //verify remove from EMP
-        verify(emp).remove();
-    }
-
-    public void testSimpleNotOwner() throws Throwable {
-        MethodInvocation mi = mock(MethodInvocation.class);
-        when(mi.getMethod()).thenReturn(DbAnnotationTestClass.class.getMethod("testMethod"));
-        EntityManagerProvider emp = mock(EntityManagerProvider.class);
-        EntityManager em = mock(EntityManager.class);
-        when(emp.getFromInterceptor()).thenReturn(new EntityManagerProvider.Info(em, false));
-        DBInterceptor interceptor = new DBInterceptor();
-        interceptor.setEntityManagerProvider(emp);
-        interceptor.invoke(mi);
-        //verify invocation
-        verify(mi).proceed();
-        //verify get EM
-        verify(emp).getFromInterceptor();
-        //verify not close EM
-        verify(em, never()).close();
-        //verify not remove from EMP
-        verify(emp, never()).remove();
     }
 
     static class DbAnnotationTestClass {
