@@ -108,6 +108,19 @@ final class DBInterceptor implements MethodInterceptor, Provider<EntityManager> 
         }
     }
 
+    EntityManager _getEntityManager() {
+        EntityManager entityManager = context.get();
+        if (entityManager == null) {
+            entityManager = emf.createEntityManager();
+            context.set(entityManager);
+        }
+        return entityManager;
+    }
+
+    void _removeEntityManager() {
+        context.remove();
+    }
+
     public static void bind(Binder binder) {
         DBInterceptor instance = new DBInterceptor();
         binder.requestInjection(instance);
