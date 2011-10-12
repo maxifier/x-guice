@@ -69,7 +69,7 @@ public class PropertyModule extends AbstractModule {
      * @param binder        - your module binder
      * @param propertiesMap - map of properties
      */
-    public static void bindProperties(Binder binder, final Map<String, String> propertiesMap) {
+    public static void bindProperties(Binder binder, final Map<String, ?> propertiesMap) {
         bindProperties(binder, new MapPropertiesHandler(propertiesMap));
     }
 
@@ -83,8 +83,7 @@ public class PropertyModule extends AbstractModule {
         for (final String key : propertiesHandler.keys()) {
             binder.bindConstant().annotatedWith(new PropertyImpl(key)).to(new Provider<String>() {
                 public String get() {
-                    String unfilteredValue = propertiesHandler.get(key);
-                    return unfilteredValue;
+                    return propertiesHandler.get(key).toString();
                 }
             });
         }
@@ -142,9 +141,9 @@ public class PropertyModule extends AbstractModule {
     }
 
     static class MapPropertiesHandler implements PropertiesHandler {
-        private final Map<String, String> propertiesMap;
+        private final Map<String, ?> propertiesMap;
 
-        public MapPropertiesHandler(Map<String, String> propertiesMap) {
+        public MapPropertiesHandler(Map<String, ?> propertiesMap) {
             this.propertiesMap = propertiesMap;
         }
 
@@ -152,8 +151,8 @@ public class PropertyModule extends AbstractModule {
             return propertiesMap.keySet();
         }
 
-        public String get(String key) {
-            return propertiesMap.get(key);
+        public <T> T get(String key) {
+            return (T) propertiesMap.get(key);
         }
     }
 }

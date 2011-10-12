@@ -1,6 +1,5 @@
 package com.magenta.guice.property;
 
-import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -14,7 +13,8 @@ import java.util.Set;
  *
  * @author Aleksey Didik
  */
-public interface PropertiesHandler {    
+public interface PropertiesHandler {
     Set<String> keys();
-    String get(String key);
+
+    <T> T get(String key);
 }

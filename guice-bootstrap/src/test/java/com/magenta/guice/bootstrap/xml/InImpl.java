@@ -16,6 +16,10 @@ import com.magenta.guice.property.Property;
 public class InImpl implements In {
     private final String property;
 
+    @Inject(optional = true)
+    @Property("my.pet.weight")
+    private double weight;
+
     @Inject
     public InImpl(@Property("test") String property) {
         this.property = property;
@@ -23,5 +27,9 @@ public class InImpl implements In {
 
     public String getProperty() {
         return property;
+    }
+
+    public double getWeight() {
+        return weight;
     }
 }

@@ -28,13 +28,13 @@ public class XmlConfigurationTest {
     @DataProvider(name = "files")
     public Object[][] fileNames() {
         return new Object[][]{
-                {"classpath://xml/test.xml"}
+                {"xml/test.xml"}
         };
     }
 
     @Test(dataProvider = "files")
     public void testXmlComponent(String fileName) {
-        XmlModule xmlModule = new XmlModule(fileName);
+        XmlModule xmlModule = new XmlModule(XmlConfigurationTest.class.getClassLoader().getResourceAsStream(fileName));
         Injector inj = Guice.createInjector(xmlModule);
         //from FooModule
         inj.getInstance(Foo.class);

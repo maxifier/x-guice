@@ -1,7 +1,11 @@
 package com.magenta.guice.bootstrap.xml;
 
 import com.google.inject.AbstractModule;
-import com.magenta.guice.bootstrap.ResourceUtils;
+import com.google.inject.Binder;
+import com.google.inject.Module;
+import com.google.inject.Scopes;
+import com.google.inject.binder.ScopedBindingBuilder;
+import com.google.inject.name.Names;
 import com.magenta.guice.bootstrap.model.Component;
 import com.magenta.guice.bootstrap.model.Constant;
 import com.magenta.guice.bootstrap.model.Guice;
@@ -9,6 +13,8 @@ import com.magenta.guice.bootstrap.model.Property;
 import com.magenta.guice.bootstrap.model.io.xpp3.XGuiceBootstrapXpp3Reader;
 import com.magenta.guice.property.PropertyModule;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,24 +36,28 @@ import java.util.Map;
 @SuppressWarnings({"unchecked"})
 public class XmlModule extends AbstractModule {
 
-    private final String xmlCfgPath;
+    private final InputStream inputStream;
     private final ClassLoader classLoader;
 
-    public XmlModule(String xmlCfgPath) {
-        this.xmlCfgPath = xmlCfgPath;
-        this.classLoader = null;
+    public XmlModule(InputStream inputStream) {
+        this.inputStream = inputStream;
+        this.classLoader = this.getClass().getClassLoader();
     }
 
-    public XmlModule(String xmlCfgPath, ClassLoader classLoader) {
-        this.xmlCfgPath = xmlCfgPath;
+    public XmlModule(InputStream inputStream, ClassLoader classLoader) {
+        this.inputStream = inputStream;
         this.classLoader = classLoader;
     }
 
+
     @Override
     protected void configure() {
-        InputStream cfgStream = readConfiguration();
-        Guice guice = parseConfiguration(cfgStream);
-        ResourceUtils.close(cfgStream);
+        Guice guice;
+        try {
+            guice = parseConfiguration();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         ReflectionBinder reflectionBinder = new ReflectionBinder(binder(), classLoader);
         bindProperties(guice);
         bindModules(guice, reflectionBinder);
@@ -89,34 +99,116 @@ public class XmlModule extends AbstractModule {
         }
     }
 
-    private Guice parseConfiguration(InputStream is) {
+    private Guice parseConfiguration() throws IOException {
         XGuiceBootstrapXpp3Reader reader = new XGuiceBootstrapXpp3Reader();
         Guice guice;
         try {
-            guice = reader.read(is);
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to read resource " + xmlCfgPath, e);
+            guice = reader.read(inputStream);
         } catch (XmlPullParserException e) {
-            throw new RuntimeException("Unable to parse resource " + xmlCfgPath, e);
+            throw new RuntimeException("Unable to parse input stream", e);
         }
         return guice;
     }
 
-    private InputStream readConfiguration() {
-        InputStream is;
-        try {
-            is = ResourceUtils.getInputStreamForPath(xmlCfgPath);
-        } catch (IOException e) {
-            throw new RuntimeException("Unable to find resource " + xmlCfgPath, e);
-        }
-        return is;
-    }
+    static final class ReflectionBinder {
 
-    @Override
-    public String toString() {
-        return "XmlModule{" +
-                "xmlCfg='" + xmlCfgPath + '\'' +
-                '}';
+        public static final Logger logger = LoggerFactory.getLogger(ReflectionBinder.class);
+
+        private final ClassLoader classLoader;
+        private final Binder binder;
+
+
+        public ReflectionBinder(Binder binder,
+                                ClassLoader classLoader) {
+            this.binder = binder;
+            this.classLoader = classLoader;
+        }
+
+
+        @SuppressWarnings({"unchecked"})
+        public void bindConstant(String annotation, String named, String value) {
+            if (annotation != null) {
+                try {
+                    Class annotationClass = classLoader.loadClass(annotation);
+                    binder.bindConstant().annotatedWith(annotationClass).to(value);
+                    logger.info("Constant '{}' has been bound with annotation '{}'", value, annotation);
+                } catch (ClassNotFoundException e) {
+                    binder.addError(String.format("Unable to find annotation class %s", annotation), e);
+                }
+            } else if (named != null) {
+                binder.bindConstant().annotatedWith(Names.named(named)).to(value);
+                logger.info("Constant '{}' has been bound with annotation '@Named(\"{}\")'", value, named);
+            } else {
+                binder.addError("Unable to bind constant without <annotation> or <named> tags." +
+                        " Use <annotation> for self-made annotations or <named> for @Named(\"<name>\") annotations");
+            }
+        }
+
+        @SuppressWarnings({"unchecked"})
+        public void bindModule(String moduleClassName) {
+            try {
+                Class moduleClass = classLoader.loadClass(moduleClassName);
+                binder.install((Module) moduleClass.newInstance());
+                logger.info("Module '{}' has been added to configuration", moduleClassName);
+            } catch (ClassNotFoundException e) {
+                binder.addError(String.format("Unable to find module class %s", moduleClassName), e);
+            } catch (InstantiationException e) {
+                binder.addError(String.format("Unable to instantiate module class %s", moduleClassName), e);
+            } catch (IllegalAccessException e) {
+                binder.addError(String.format("Illegal access to module class %s", moduleClassName), e);
+            } catch (ClassCastException e) {
+                binder.addError(
+                        String.format("Module class %s is not an instance of 'com.google.inject.Module'", moduleClassName),
+                        e);
+            }
+        }
+
+        @SuppressWarnings({"unchecked"})
+        public void bindComponent(String interfaceName, String annotationName, String className,
+                                  String scope, boolean eager) {
+            ScopedBindingBuilder builder;
+            Class classA;
+            try {
+                classA = classLoader.loadClass(className);
+            } catch (ClassNotFoundException e) {
+                binder.addError(String.format("Unable to find component class %s", className), e);
+                return;
+            }
+            if (interfaceName == null) {
+                builder = binder.bind(classA);
+                logger.info("Component '{}' has been bound to itself", className);
+            } else {
+                Class interfaceA;
+                try {
+                    interfaceA = classLoader.loadClass(interfaceName);
+                } catch (ClassNotFoundException e) {
+                    binder.addError(String.format("Unable to find component interface %s", interfaceName), e);
+                    return;
+                }
+                if (annotationName == null) {
+                    builder = binder.bind(interfaceA).to(classA);
+                    logger.info("Component '{}' has been bound to '{}'", new Object[]{className, interfaceName});
+                } else {
+                    Class annotation;
+                    try {
+                        annotation = classLoader.loadClass(annotationName);
+                    } catch (ClassNotFoundException e) {
+                        binder.addError(String.format("Unable to find annotation class %s", annotationName), e);
+                        return;
+                    }
+                    builder = binder.bind(interfaceA).annotatedWith(annotation).to(classA);
+                    logger.info("Component '{}' has been bound to '{}' annotated with '{}' ", new Object[]{className, interfaceName, annotationName});
+                }
+            }
+            if (eager) {
+                builder.asEagerSingleton();
+            } else if (scope != null && scope.equals(Component.SINGLETON)) {
+                builder.in(Scopes.SINGLETON);
+            } else if (scope != null && scope.equals(Component.NO_SCOPE)) {
+                builder.in(Scopes.NO_SCOPE);
+            }
+        }
+
     }
 }
 

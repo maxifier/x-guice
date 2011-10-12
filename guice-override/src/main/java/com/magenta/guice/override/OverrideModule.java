@@ -66,7 +66,7 @@ public abstract class OverrideModule extends AbstractModule {
     }
 
 
-    private static class OverrideBinder implements Binder {
+    public static class OverrideBinder implements Binder {
 
         private RecordingBinder standard = new RecordingBinder(Stage.TOOL);
         private RecordingBinder override = new RecordingBinder(Stage.TOOL);
