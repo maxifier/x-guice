@@ -13,6 +13,7 @@ import com.magenta.guice.property.PropertyModule;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
+import net.sf.cglib.proxy.Enhancer;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
@@ -54,6 +55,7 @@ public class GroovyModule extends OverrideModule {
         //go!
         script.run();
     }
+
 
     public static class BinderDelegate extends OverrideBinder {
 

@@ -142,10 +142,6 @@ public abstract class OverrideModule extends AbstractModule {
             standard.bindInterceptor(classMatcher, methodMatcher, interceptors);
         }
 
-        public void requireBinding(Key<?> key) {
-            standard.getProvider(key);
-        }
-
         public void requireBinding(Class<?> type) {
             standard.getProvider(type);
         }

@@ -10,6 +10,7 @@ import groovy.lang.GroovyShell;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 
 import static org.testng.Assert.assertEquals;
@@ -31,7 +32,10 @@ public class GroovyModuleTest {
         InputStream resourceAsStream = GroovyModuleTest.class.getClassLoader().getResourceAsStream(fileName);
         Binding binding = new Binding();
         binding.setVariable("client", "forbes");
-        GroovyShell shell = new GroovyShell(binding);
+        binding.setVariable("binder", binder);
+        GroovyShell shell = new GroovyShell();
+        shell.setProperty("client", "forbes");
+        shell.setProperty("binder", binder);
         GroovyModule gModule = new GroovyModule(resourceAsStream, shell);
         Injector inj = Guice.createInjector(gModule);
         //from FooModule
