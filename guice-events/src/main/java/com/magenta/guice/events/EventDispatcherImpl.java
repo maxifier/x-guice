@@ -83,14 +83,11 @@ public class EventDispatcherImpl implements EventDispatcher {
         }
         try {
             if (isLocked.get() == null) {
-                // мы не должны дважды получать readLock в одном потоке. Поэтому получаем его ТОЛЬКО
-                // если он не был получен ранее, и устанавливаем флаг
                 readLock.lock();
                 isLocked.set(Boolean.TRUE);
                 try {
                     handled = fireEvent0(event);
                 } finally {
-                    // освободим блокировку и сбросим флажок блокировки
                     readLock.unlock();
                     isLocked.remove();
                 }
@@ -140,12 +137,6 @@ public class EventDispatcherImpl implements EventDispatcher {
         return handled;
     }
 
-    /**
-     * Этот метод вызывается, когда событие не было обработано. Реализация по умолчанию не делает ничего
-     * (только выводит в лог warning).
-     *
-     * @param event событие.
-     */
     protected void unhandledEvent(Object event) {
         LOG.warn("Event " + event + " of class " + event.getClass() + " was not processed");
     }
@@ -154,10 +145,8 @@ public class EventDispatcherImpl implements EventDispatcher {
     public final <T> void register(@NotNull T o) throws CyclicFilterAnnotationException {
         synchronized (registrationQueue) {
             if (firingEvents == 0) {
-                // если никакие события не обрабатываются, зарегистрируем сразу (а новые события подождут)
                 register0(o);
             } else {
-                // если события уже обрабатываются, то просто добавим нашего слушателя в очередь
                 registrationQueue.add(o);
             }
         }
@@ -165,8 +154,6 @@ public class EventDispatcherImpl implements EventDispatcher {
 
     @SuppressWarnings({"unchecked"})
     private <T> void register0(T o) {
-        // этот метод всегда вызывается с блокировкой на registrationQueue и firingEvents = 0, и, таким образом,
-        // не требует дополнительной синхронизации (он гарантированно будет выполняться в гордом одиночестве)
         Class<T> c = (Class<T>) o.getClass();
         //noinspection unchecked
         ListenerClassInstance<T> listenerClass = classInfos.get(c);

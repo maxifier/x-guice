@@ -1,11 +1,12 @@
 package com.magenta.guice.events;
 
-import static org.mockito.Mockito.*;
-import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+
+import static org.mockito.Mockito.*;
+import static org.testng.Assert.*;
 
 @Test
 public class EventDispatcherUTest {
@@ -47,7 +48,6 @@ public class EventDispatcherUTest {
     }
 
     @Test(expectedExceptions = CyclicFilterAnnotationException.class)
-    /** Аннотации не должны образовывать цикл */
     public void testCyclicAnnotations1() {
         class Test1 {
             @Handler
@@ -61,7 +61,6 @@ public class EventDispatcherUTest {
     }
 
     @Test(expectedExceptions = CyclicFilterAnnotationException.class)
-    /** Аннотации не должны образовывать цикл */
     public void testCyclicAnnotations2() {
         class Test2 {
             @Handler
@@ -75,7 +74,6 @@ public class EventDispatcherUTest {
     }
 
     @Test(expectedExceptions = CyclicFilterAnnotationException.class)
-    /** Аннотации не должны образовывать цикл, в частности - фильтр не может сам себя аннотировать */
     public void testAutoAnnotated() {
         class TestAuto {
             @Handler
@@ -89,7 +87,6 @@ public class EventDispatcherUTest {
     }
 
     @Test(expectedExceptions = RuntimeException.class)
-    /** Обработчик должен иметь или фильтр, или хотя бы параметр */
     public void testEmptyHandler() {
         class Test1 {
             @Handler
@@ -104,7 +101,6 @@ public class EventDispatcherUTest {
 
     @Test
     public void testGroupEvents() {
-        // todo проверить стандартный фильтр @HandleAnnotated
     }
 
     @Test
@@ -129,7 +125,6 @@ public class EventDispatcherUTest {
     }
 
     @Test
-    /** проверяет, что листнер должен честно освобождаться диспетчером */
     public void testWeakReference() throws Exception {
         class TestListener {
             boolean x = false;
@@ -154,15 +149,12 @@ public class EventDispatcherUTest {
         //noinspection UnusedAssignment
         tl = null;
 
-        // этот тест не совсем корректен: gc необязательно немедленно освободит ссылку.
-        // Однако 100 мс как правило достаточно, чтобы он это сделал...
         System.gc();
         Thread.sleep(100);
         assertEquals(q.poll(), wr);
     }
 
     @Test
-    /** Проверяет работу диспетчера при возникновении событий и новых слушателей в процессе обработки. */
     public void testRegisterInHandler() {
         final EventDispatcher d = new EventDispatcherImpl(mock(ListenerRegistrationQueue.class));
 
@@ -177,8 +169,6 @@ public class EventDispatcherUTest {
                     assertEquals(x, 0);
                     x++;
                     d.register(l);
-
-                    // этот fireEvent не должен быть пойман новым слушателем!!! 
                     d.fireEvent("321");
                 } else if (s.equals("321")) {
                     assertEquals(x, 1);

@@ -21,11 +21,6 @@ class EventReflectionParser {
     private static final Map<Class<? extends Annotation>, HandlerAnnotation> annotationInfos = new THashMap();
     private static final Map<Class, ListenerClass> classInfos = new THashMap();
 
-    /**
-     * Этот объект - маркер. Перед тем, как начать обработку аннотации, в мапу annotationInfos кладется это значение.
-     * После, если мы это значение достанем в ходе обработки аннотаций, это значит, что аннотация уже обрабатывается,
-     * т.е. найдена циклическая зависимость.
-     */
     private static final HandlerAnnotation processing = new HandlerAnnotation(null, null, null);
 
     private static final Lock readLock;
@@ -45,9 +40,6 @@ class EventReflectionParser {
         Class<? extends Annotation> ac = a.annotationType();
         HandlerAnnotation c = annotationInfos.get(ac);
 
-        // тут сравниваем именно на ссылочное равенство! т.к. объект processing является маркером циклической
-        // зависимости (т.к. мы кладем именно processing, и достать должны именно его в случае циклической
-        // аннотации)
         if (c == processing) {
             throw new CyclicFilterAnnotationException(ac.toString());
         }

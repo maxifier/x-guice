@@ -64,7 +64,6 @@ class ListenerClassInstance<T> {
         if (!handlers.isEmpty()) {
             writeLock.lock();
             try {
-                // добавляем в список, только если у этого класса есть обработчики
                 listeners.add(new ListenerReference<T>(this, listener, queue));
             } finally {
                 writeLock.unlock();

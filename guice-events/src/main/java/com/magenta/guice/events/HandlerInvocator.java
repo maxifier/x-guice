@@ -8,7 +8,6 @@ import java.lang.reflect.Method;
  * Date: 18.06.2009
  * Time: 11:44:47
  * <p/>
- * Обертка над методом с одним параметром или без параметров вообще.
  */
 public abstract class HandlerInvocator<T, L> {
     protected final Method method;
@@ -34,11 +33,6 @@ public abstract class HandlerInvocator<T, L> {
         return method;
     }
 
-    /**
-     * @param instance экземпляр
-     * @param t        параметр. Если метод не имеет параметров, то игнорируется
-     * @return результат вызова, <code>null</code> если метод имеет тип void
-     */
     public abstract Object invoke(L instance, T t);
 
     @Override

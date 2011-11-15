@@ -11,7 +11,7 @@ public interface AnimalListener {
     void animal(Animal e);
 
     @Handler
-    @AnimalHandler({Animal.RABBIT /*, Animal.DOG - на вкус и цвет... */})
+    @AnimalHandler({Animal.RABBIT /*, Animal.DOG  */})
     void eatableAnimal(Animal e);
 
     @Handler
