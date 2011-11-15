@@ -30,12 +30,8 @@ public class GroovyModuleTest {
     @Test(dataProvider = "files")
     public void testGroovyModule(String fileName) {
         InputStream resourceAsStream = GroovyModuleTest.class.getClassLoader().getResourceAsStream(fileName);
-        Binding binding = new Binding();
-        binding.setVariable("client", "forbes");
-        binding.setVariable("binder", binder);
         GroovyShell shell = new GroovyShell();
         shell.setProperty("client", "forbes");
-        shell.setProperty("binder", binder);
         GroovyModule gModule = new GroovyModule(resourceAsStream, shell);
         Injector inj = Guice.createInjector(gModule);
         //from FooModule
