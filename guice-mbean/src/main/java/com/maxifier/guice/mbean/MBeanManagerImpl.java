@@ -1,6 +1,7 @@
 package com.maxifier.guice.mbean;
 
 import com.google.inject.Singleton;
+import com.sun.jmx.mbeanserver.Introspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +39,7 @@ public class MBeanManagerImpl implements MBeanManager, com.magenta.guice.mbean.M
     public void register(Iterable<Object> mbeans) {
         for (Object mbean : mbeans) {
             String name = resolveName(mbean);
-            if (!checkCompliantion(mbean)) {
+            if (!checkCompliantion(mbean.getClass())) {
                 try {
                     mbean = mbeanGenerator.makeMBean(mbean);
                 } catch (MBeanGenerationException e) {
@@ -164,16 +165,44 @@ public class MBeanManagerImpl implements MBeanManager, com.magenta.guice.mbean.M
         }));
     }
 
-    public static boolean checkCompliantion(Object mbeanPretender) {
-        Class<?> mbeanPretenderClass = mbeanPretender.getClass();
-        String mbeanPretenderInterfaceName = mbeanPretenderClass.getName() + "MBean";
-        Class<?>[] mbeanPretenderClassInterfaces = mbeanPretenderClass.getInterfaces();
-        for (Class<?> mbeanPretenderClassInterface : mbeanPretenderClassInterfaces) {
-            if (mbeanPretenderClassInterface.getName().equals(mbeanPretenderInterfaceName)) {
-                return true;
-            }
+    static boolean checkCompliantion(Class baseClass) {
+        Class current = baseClass;
+        Class mbeanInterface = null;
+        while (current != null) {
+            mbeanInterface =
+                    findMBeanInterface(current, current.getName());
+            if (mbeanInterface != null) break;
+            current = current.getSuperclass();
         }
-        return false;
+        return mbeanInterface != null;
+    }
+
+    private static Class findMBeanInterface(Class aClass, String aName) {
+        Class current = aClass;
+        while (current != null) {
+            final Class[] interfaces = current.getInterfaces();
+            final int len = interfaces.length;
+            for (int i = 0; i < len; i++) {
+                final Class inter =
+                        implementsMBean(interfaces[i], aName);
+                if (inter != null) return inter;
+            }
+            current = current.getSuperclass();
+        }
+        return null;
+    }
+
+    private static Class implementsMBean(Class c, String clName) {
+        String clMBeanName = clName + "MBean";
+        if (c.getName().equals(clMBeanName)) {
+            return c;
+        }
+        Class[] interfaces = c.getInterfaces();
+        for (Class anInterface : interfaces) {
+            if (anInterface.getName().equals(clMBeanName))
+                return anInterface;
+        }
+        return null;
     }
 }
 

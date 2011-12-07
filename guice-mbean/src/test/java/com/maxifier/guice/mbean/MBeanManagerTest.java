@@ -90,11 +90,16 @@ public class MBeanManagerTest {
     static class FooCompliant implements FooCompliantMBean {
     }
 
+    @MBean(name = "service=test")
+    static class FooCompliantToo extends FooCompliant {
+    }
+
+
     @Test
     public void testCompliantion() throws Exception {
-        MBeanManagerImpl test = new MBeanManagerImpl("test", mock(MBeanServer.class), null);
-        assertTrue(MBeanManagerImpl.checkCompliantion(new FooCompliant()));
-        assertFalse(MBeanManagerImpl.checkCompliantion(new FooNotCompliant()));
+        assertTrue(MBeanManagerImpl.checkCompliantion(FooCompliant.class));
+        assertTrue(MBeanManagerImpl.checkCompliantion(FooCompliantToo.class));
+        assertFalse(MBeanManagerImpl.checkCompliantion(FooNotCompliant.class));
     }
 
     @Test

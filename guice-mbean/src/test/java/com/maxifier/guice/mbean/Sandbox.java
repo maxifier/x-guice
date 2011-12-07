@@ -4,10 +4,13 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.matcher.Matchers;
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.NoOp;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
 import javax.inject.Inject;
+import javax.management.*;
 import java.lang.management.ManagementFactory;
 
 /**
@@ -23,38 +26,15 @@ import java.lang.management.ManagementFactory;
  */
 public class Sandbox {
 
-    public static void main(String[] args) throws InterruptedException {
-        Injector inj = Guice.createInjector(new AbstractModule() {
-            @Override
-            protected void configure() {
-                install(MBeanModule.platform("test"));
-                bind(Foo.class).asEagerSingleton();
-                //bind interceptor to be sure
-                bindInterceptor(Matchers.any(), Matchers.any(), new MethodInterceptor() {
-                    @Override
-                    public Object invoke(MethodInvocation invocation) throws Throwable {
-                        return invocation.proceed();
-                    }
-                });
-            }
+    public static void main(String[] args) throws InterruptedException, MalformedObjectNameException, MBeanRegistrationException, InstanceAlreadyExistsException, NotCompliantMBeanException {
+        Foo object = new Foo();
+        Object o = Enhancer.create(Foo.class, new NoOp() {
         });
-
-        Guice.createInjector(MBeanModule.server("<domain-name>", ManagementFactory.getPlatformMBeanServer()));
-        Thread.sleep(100000000L);
+        ManagementFactory.getPlatformMBeanServer().registerMBean(o, new ObjectName("test", "serice", "hello"));
     }
 
-    @MBean(name = "service=Foo")
-    public class Foo {
-
-        private final MBeanManager mBeanManager;
-
-        @Inject
-        Foo(MBeanManager mBeanManager) {
-            this.mBeanManager = mBeanManager;
-        }
-
-        public void make() {
-            // mBeanManager.register("service=Foo Robots", new FooRobot());
-        }
+    public static class Foo implements FooMBean {
     }
+    
+    public interface FooMBean {}
 }

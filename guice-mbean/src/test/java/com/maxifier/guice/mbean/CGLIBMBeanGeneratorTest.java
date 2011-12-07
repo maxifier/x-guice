@@ -23,7 +23,7 @@ public class CGLIBMBeanGeneratorTest {
         Foo mbeanPretender = new Foo(false
         );
         Object mbean = cglibmBeanGenerator.makeMBean(mbeanPretender);
-        MBeanManagerImpl.checkCompliantion(mbean);
+        MBeanManagerImpl.checkCompliantion(mbean.getClass());
     }
 
     @Test
