@@ -36,7 +36,7 @@ public class CGLIBMBeanGenerator implements MBeanGenerator {
 
         Method[] methods = methodCache.get(pretenderClass);
         if (methods.length == 0) {
-            throw new MBeanGenerationException("MBean pretender have no methods, annotated with @MBeanMethod");
+            throw new MBeanGenerationException(String.format("MBean pretender %s have no methods, annotated with @MBeanMethod", pretenderClass.getName()));
         }
         InterfaceMaker interfaceMaker = new InterfaceMaker();
         interfaceMaker.setNamingPolicy(new DefinedNameNamingPolicy(mbeanInterfaceName));
