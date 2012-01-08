@@ -5,12 +5,11 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
 import com.magenta.guice.bootstrap.xml.*;
-import groovy.lang.Binding;
+import com.magenta.guice.override.OverrideModule;
 import groovy.lang.GroovyShell;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 
 import static org.testng.Assert.assertEquals;
@@ -33,11 +32,11 @@ public class GroovyModuleTest {
         GroovyShell shell = new GroovyShell();
         shell.setProperty("client", "forbes");
         GroovyModule gModule = new GroovyModule(resourceAsStream, shell);
-        Injector inj = Guice.createInjector(gModule);
+        Injector inj = Guice.createInjector(OverrideModule.collect(gModule));
         //from FooModule
         inj.getInstance(Foo.class);
         //just component
-        assertTrue(inj.getInstance(TestInterface.class) instanceof First);
+        assertTrue(inj.getInstance(TestInterface.class) instanceof Second);
         //just component with annotation
         assertTrue(inj.getInstance(Key.get(TestInterface.class, TestAnnotation.class)) instanceof Second);
         //test constant
@@ -59,5 +58,6 @@ public class GroovyModuleTest {
         //test constant
         inj.getInstance(Key.get(String.class, Names.named("test.name")));
     }
+
 
 }

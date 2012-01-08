@@ -1,5 +1,6 @@
 import com.google.inject.Scopes
 import com.google.inject.name.Names
+import com.magenta.guice.override.OverrideModule
 import com.magenta.guice.bootstrap.xml.*
 
 install(new FooModule())
@@ -10,8 +11,6 @@ bindConstant().annotatedWith(Constant).to('Hello world!')
 bind(AsEager).asEagerSingleton()
 binder.bind(In).to(InImpl).in(Scopes.SINGLETON)
 bindConstant().annotatedWith(Names.named('test.name')).to('Hello world!')
-
-override(TestInterface).to(First)
 
 def petWeight = 5.01
 if (System.getProperty("os.name").toLowerCase().contains("mac")) {
@@ -24,3 +23,12 @@ def properties = [:]
 properties.'test' = 'testValue'
 properties.'my.pet.weight' = petWeight
 bindProperties(properties)
+
+install(new OverrideModule() {
+
+    @Override
+    protected void configure() {
+        override(TestInterface).to(Second)
+    }
+})
+
