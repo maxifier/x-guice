@@ -1,8 +1,12 @@
 package com.magenta.guice.override;
 
 import com.google.inject.*;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
+import com.google.inject.util.Modules;
 import org.testng.annotations.Test;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 /*
@@ -70,5 +74,49 @@ public class OverrideModuleTest {
     static class NewImpl implements I {
     }
 
+    @Test
+    public void testPrivateModulesOverride() {
+        Module pm1 = new PrivateModule() {
+            @Override
+            protected void configure() {
+                bind(I.class).to(OldImpl.class);
+                expose(I.class);
+
+            }
+        };
+        Module pm2 = new PrivateModule() {
+            @Override
+            protected void configure() {
+                bind(I.class).to(NewImpl.class);
+                expose(I.class);
+            }
+        };
+
+    }
+
+    @Test
+    public void testConstantOverride() throws Exception {
+        Module m1 = new AbstractModule() {
+            @Override
+            protected void configure() {
+                bindConstant().annotatedWith(Names.named("a")).to("Hello");
+            }
+        };
+        Module m2 = new OverrideModule() {
+            @Override
+            protected void configure() {
+                overrideConstant().annotatedWith(Names.named("a")).to("world");
+            }
+        };
+
+        Foo instance = Guice.createInjector(OverrideModule.collect(m1, m2)).getInstance(Foo.class);
+        assertEquals(instance.bu, "world", "Overridden value expected");
+    }
+
+    static class Foo {
+        @Inject
+        @Named("a")
+        String bu;
+    }
 
 }

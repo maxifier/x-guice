@@ -56,12 +56,16 @@ public abstract class OverrideModule extends AbstractModule {
         getOverrideBinder().override(module);
     }
 
+    public AnnotatedConstantBindingBuilder overrideConstant() {
+        return getOverrideBinder().overrideConstant();
+    }
+
     private OverrideBinder getOverrideBinder() {
         Binder binder = binder();
         if (binder instanceof OverrideBinder) {
             return (OverrideBinder) binder;
         } else {
-            throw new IllegalStateException("Unable to use override possiblity without using OverrideModule.collect(...)");
+            throw new IllegalStateException("Unable to use override possibility without using OverrideModule.collect(...)");
         }
     }
 
@@ -218,6 +222,8 @@ public abstract class OverrideModule extends AbstractModule {
             override.install(module);
         }
 
-
+        public AnnotatedConstantBindingBuilder overrideConstant() {
+            return override.bindConstant();
+        }
     }
 }
