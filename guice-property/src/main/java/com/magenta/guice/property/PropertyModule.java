@@ -122,24 +122,6 @@ public class PropertyModule extends AbstractModule {
         this.propertiesHandler = new JavaPropertiesHandler(properties);
     }
 
-    static class JavaPropertiesHandler implements PropertiesHandler {
-        private final Properties properties;
-
-        public JavaPropertiesHandler(Properties properties) {
-            this.properties = properties;
-        }
-
-        @SuppressWarnings({"unchecked", "RedundantCast"})
-        //one way to do recast
-        public Set<String> keys() {
-            return (Set) properties.keySet();
-        }
-
-        public String get(String key) {
-            return properties.getProperty(key);
-        }
-    }
-
     static class MapPropertiesHandler implements PropertiesHandler {
         private final Map<String, ?> propertiesMap;
 
