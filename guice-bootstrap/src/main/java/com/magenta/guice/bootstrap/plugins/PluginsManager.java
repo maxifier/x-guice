@@ -1,14 +1,8 @@
 package com.magenta.guice.bootstrap.plugins;
 
-import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Module;
 import com.magenta.guice.bootstrap.model.Plugin;
 import com.magenta.guice.bootstrap.model.io.xpp3.XGuicePluginXpp3Reader;
-import com.magenta.guice.property.PropertiesHandler;
-import com.magenta.guice.property.PropertyImpl;
-import com.magenta.guice.property.PropertyModule;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +15,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 
 /*
 * Project: Maxifier
@@ -58,20 +50,16 @@ public final class PluginsManager {
         for (Plugin plugin : plugins) {
             String moduleName = plugin.getModule();
             try {
-                PluginModule module = (PluginModule) pluginsCL.loadClass(moduleName).newInstance();
-                Module propertyModule = makePropertyModule(injector, module);
-                if (propertyModule == null) {
-                    injector = injector.createChildInjector(module);
-                } else {
-                    injector = injector.createChildInjector(module, propertyModule);
-                }
+                ChildModule module = (ChildModule) pluginsCL.loadClass(moduleName).newInstance();
+                module.beforeChildInjectorCreating(injector);
+                injector = injector.createChildInjector(module);
                 logger.info("Plugin {} has been loaded.", plugin.getName());
             } catch (InstantiationException e) {
                 logger.warn("Unable to instantiate module " + moduleName + " of plugin " + plugin.getName(), e);
             } catch (IllegalAccessException e) {
                 logger.warn("Unable to instantiate module " + moduleName + " of plugin " + plugin.getName(), e);
             } catch (ClassCastException e) {
-                logger.warn("Old plugin! Unable to cast " + moduleName + " to new PluginModule " + plugin.getName(), e);
+                logger.warn("Old plugin! Unable to cast " + moduleName + " to new ChildModule " + plugin.getName(), e);
             } catch (ClassNotFoundException e) {
                 logger.warn("Module class " + moduleName + " of plugin " + plugin.getName() + " is not found into classpath.", e);
             }
@@ -79,30 +67,6 @@ public final class PluginsManager {
         return injector;
     }
 
-    private static Module makePropertyModule(Injector injector, PluginModule module) {
-        PropertiesHandler moduleProperties = module.getModuleProperties();
-        if (moduleProperties == null) {
-            return null;
-        }
-        final Map<String, Object> newProperties = new HashMap<String, Object>();
-        for (String key : moduleProperties.keys()) {
-            try {
-                injector.getInstance(Key.get(String.class, new PropertyImpl(key)));
-            } catch (com.google.inject.ConfigurationException e) {
-                //property is not installed into parent container -> we should install ours
-                newProperties.put(key, moduleProperties.get(key));
-            }
-        }
-        if (!newProperties.isEmpty()) {
-            return new AbstractModule() {
-                @Override
-                protected void configure() {
-                    PropertyModule.bindProperties(binder(), newProperties);
-                }
-            };
-        }
-        return null;
-    }
 
     private static URL[] scanJars(File pluginsPath) {
         //prepare jars URL
