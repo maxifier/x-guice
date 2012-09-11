@@ -201,18 +201,11 @@ final class DBInterceptor implements MethodInterceptor, TypeListener {
     }
 
     @Deprecated
-    EntityManager _getEntityManager(Annotation bindingAnnotation) {
-        if (bindingAnnotation == null) {
-            bindingAnnotation = DEFAULT;
-        }
-        ThreadLocal<EntityManager> context = contexts.get(bindingAnnotation);
-        if (context == null) {
-            context = new ThreadLocal<EntityManager>();
-            contexts.put(bindingAnnotation, context);
-        }
+    EntityManager _getEntityManager() {
+        ThreadLocal<EntityManager> context = contexts.get(DEFAULT);
         EntityManager entityManager = context.get();
         if (entityManager == null) {
-            EntityManagerFactory factory = getEntityManagerFactory(bindingAnnotation);
+            EntityManagerFactory factory = getEntityManagerFactory(DEFAULT);
             entityManager = factory.createEntityManager();
             context.set(entityManager);
         }
@@ -220,16 +213,8 @@ final class DBInterceptor implements MethodInterceptor, TypeListener {
     }
 
     @Deprecated
-    void _removeEntityManager(Annotation bindingAnnotation) {
-        if (bindingAnnotation == null) {
-            bindingAnnotation = DEFAULT;
-        }
-        ThreadLocal<EntityManager> context = contexts.get(bindingAnnotation);
-        if (context == null) {
-            context = new ThreadLocal<EntityManager>();
-            contexts.put(bindingAnnotation, context);
-        }
-        context.remove();
+    void _removeEntityManager() {
+        contexts.get(DEFAULT).remove();
     }
 
     Annotation[] getAnnotations(Method method) {
