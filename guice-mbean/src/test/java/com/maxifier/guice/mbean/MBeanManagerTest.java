@@ -1,12 +1,21 @@
 package com.maxifier.guice.mbean;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+
+import org.junit.Test;
 import org.mockito.Matchers;
-import org.testng.annotations.Test;
 
-import javax.management.*;
-
-import static org.mockito.Mockito.*;
-import static org.testng.Assert.*;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
 
 /**
  * Project: Maxifier
@@ -19,7 +28,6 @@ import static org.testng.Assert.*;
  *
  * @author Aleksey Didik
  */
-@Test
 public class MBeanManagerTest {
 
     @Test
@@ -28,7 +36,7 @@ public class MBeanManagerTest {
         final Object mbean = new Object();
         final String expected = String.format("class=java.lang.Object");
         final String result = test.resolveName(mbean);
-        assertEquals(expected, result, "Default name is not right");
+        assertEquals(expected, result);
     }
 
     @Test
@@ -36,7 +44,7 @@ public class MBeanManagerTest {
         MBeanManagerImpl test = new MBeanManagerImpl("test", mock(MBeanServer.class), null);
         String tested = "mockDomain:service=test";
         String result = test.checkAlreadyDomained(tested);
-        assertEquals("service=test", result, "domain might be deleted");
+        assertEquals("service=test", result);
     }
 
     @com.magenta.guice.mbean.MBean(name = "service=test")
@@ -61,22 +69,22 @@ public class MBeanManagerTest {
         Object mbean = new Annotated();
         String expected = String.format("service=test");
         String result = test.resolveName(mbean);
-        assertEquals(expected, result, "Name is caught from @MBean is not right");
+        assertEquals(expected, result);
 
         mbean = new OldAnnotated();
         result = test.resolveName(mbean);
-        assertEquals(expected, result, "Name is caught from @MBean is not right");
+        assertEquals(expected, result);
 
 
         mbean = new AnnotatedNotNamed();
         expected = String.format("class=com.maxifier.guice.mbean.MBeanManagerTest$AnnotatedNotNamed");
         result = test.resolveName(mbean);
-        assertEquals(expected, result, "Name must be created by default");
+        assertEquals(expected, result);
 
         mbean = new OldAnnotatedNotNamed();
         expected = String.format("class=com.maxifier.guice.mbean.MBeanManagerTest$OldAnnotatedNotNamed");
         result = test.resolveName(mbean);
-        assertEquals(expected, result, "Name must be created by default");
+        assertEquals(expected, result);
     }
 
     static interface FooCompliantMBean {

@@ -1,16 +1,18 @@
 package com.magenta.guice.property.converter;
 
+
+import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.magenta.guice.property.Property;
 import com.magenta.guice.property.PropertyModule;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import java.util.Properties;
-
-import static org.testng.Assert.assertEquals;
 
 /**
  * Project: Maxifier
@@ -44,7 +46,7 @@ public class ArrayPropertyTest {
         });
 
         Form form = inj.getInstance(Form.class);
-        assertEquals(new String[]{"semen", "dima"}, form.getNames());
+        assertArrayEquals(new String[]{"semen", "dima"}, form.getNames());
         assertEquals(true, form.getActives()[0]);
         assertEquals(false, form.getActives()[1]);
         assertEquals(false, form.getActives()[2]);

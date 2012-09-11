@@ -1,8 +1,11 @@
 package com.magenta.guice.decorator;
 
-import com.google.inject.*;
-import org.testng.Assert;
-import org.testng.annotations.Test;
+import static com.google.inject.Guice.createInjector;
+import static junit.framework.Assert.assertEquals;
+
+import com.google.inject.BindingAnnotation;
+import com.google.inject.Key;
+import org.junit.Test;
 
 import javax.inject.Inject;
 import java.lang.annotation.ElementType;
@@ -12,9 +15,6 @@ import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static com.google.inject.Guice.createInjector;
-import static org.testng.Assert.assertEquals;
-
 /**
  * Author: Andrey Khayrutdinov
  * Date: 12/13/11 5:02 PM
@@ -23,7 +23,7 @@ import static org.testng.Assert.assertEquals;
  */
 
 public class DecoratorModuleTest {
-    
+
     @Test
     public void testChainOfThree() {
         DecoratorModule module = new DecoratorModule() {
@@ -37,8 +37,8 @@ public class DecoratorModuleTest {
         };
         DecoratableInterface decoratable = createInjector(module).getInstance(DecoratableInterface.class);
         assertEquals(decoratable.compute(), new Two(new Three()).compute());
-    } 
-    
+    }
+
     static interface DecoratableInterface {
         int compute();
     }
@@ -51,7 +51,7 @@ public class DecoratorModuleTest {
     static @interface A4Test {
 
     }
-    
+
     static class Nil implements DecoratableInterface {
         private final DecoratableInterface next;
 
@@ -79,7 +79,7 @@ public class DecoratorModuleTest {
             return 2 + ((next == null) ? 0 : next.compute());
         }
     }
-    
+
     static class Three implements DecoratableInterface {
         @Inject
         Three() {

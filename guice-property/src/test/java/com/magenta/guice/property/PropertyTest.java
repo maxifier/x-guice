@@ -1,16 +1,16 @@
 package com.magenta.guice.property;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 /**
  * Project: Maxifier
@@ -23,7 +23,6 @@ import static org.testng.Assert.assertTrue;
  *
  * @author Aleksey Didik
  */
-@Test
 public class PropertyTest {
 
     @Test
@@ -44,11 +43,11 @@ public class PropertyTest {
         });
 
         Animal animal = inj.getInstance(Animal.class);
-        assertEquals("Zebra", animal.getName(), "Animal name must be Zebra");
-        assertEquals("Earth", animal.getPlanet(), "Default value might not be overrided");
-        assertEquals(4, animal.getAge(), "Animal age must be 4");
-        assertTrue(animal.isWild(), "Animal must be wild");
-        assertEquals(15.52, animal.getTailLength(), 0.0, "Animal name must be Zebra");
+        assertEquals("Zebra", animal.getName());
+        assertEquals("Earth", animal.getPlanet());
+        assertEquals("Animal age must be 4", 4, animal.getAge());
+        assertTrue("Animal must be wild", animal.isWild());
+        assertEquals("Animal name must be Zebra", 15.52, animal.getTailLength(), 0.0);
     }
 
     static class AnimalImpl implements Animal {

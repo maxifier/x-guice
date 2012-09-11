@@ -1,33 +1,34 @@
 package com.maxifier.guice.bootstrap.groovy;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
-import com.magenta.guice.bootstrap.xml.*;
+import com.magenta.guice.bootstrap.xml.Alone;
+import com.magenta.guice.bootstrap.xml.AsEager;
+import com.magenta.guice.bootstrap.xml.Constant;
+import com.magenta.guice.bootstrap.xml.Foo;
+import com.magenta.guice.bootstrap.xml.In;
+import com.magenta.guice.bootstrap.xml.InImpl;
+import com.magenta.guice.bootstrap.xml.Second;
+import com.magenta.guice.bootstrap.xml.TestAnnotation;
+import com.magenta.guice.bootstrap.xml.TestInterface;
 import com.magenta.guice.override.OverrideModule;
 import groovy.lang.GroovyShell;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import java.io.InputStream;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
-
-@Test
 public class GroovyModuleTest {
 
-    @DataProvider(name = "files")
-    public Object[][] fileNames() {
-        return new Object[][]{
-                {"groovy/test.groovy"}
-        };
-    }
 
-    @Test(dataProvider = "files")
-    public void testGroovyModule(String fileName) {
+    @Test
+    public void testGroovyModule() {
+        String fileName = "groovy/test.groovy";
         InputStream resourceAsStream = GroovyModuleTest.class.getClassLoader().getResourceAsStream(fileName);
         GroovyShell shell = new GroovyShell();
         shell.setProperty("client", "forbes");
@@ -51,7 +52,7 @@ public class GroovyModuleTest {
         assertTrue(in1 == in2);
 
         assertEquals(((InImpl) in1).getProperty(), "testValue");
-        assertEquals(((InImpl) in1).getWeight(), 523.23);
+        assertEquals(((InImpl) in1).getWeight(), 523.23, 0.001);
 
         //test asEager
         inj.getInstance(AsEager.class);

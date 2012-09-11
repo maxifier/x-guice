@@ -1,14 +1,13 @@
 package com.magenta.guice.bootstrap.xml;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Names;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import org.junit.Test;
 
 /**
  * Project: Maxifier
@@ -21,19 +20,11 @@ import static org.testng.Assert.assertTrue;
  *
  * @author Aleksey Didik
  */
-@Test
 public class XmlConfigurationTest {
 
-
-    @DataProvider(name = "files")
-    public Object[][] fileNames() {
-        return new Object[][]{
-                {"xml/test.xml"}
-        };
-    }
-
-    @Test(dataProvider = "files")
-    public void testXmlComponent(String fileName) {
+    @Test
+    public void testXmlComponent() {
+        String fileName = "xml/test.xml";
         XmlModule xmlModule = new XmlModule(XmlConfigurationTest.class.getClassLoader().getResourceAsStream(fileName));
         Injector inj = Guice.createInjector(xmlModule);
         //from FooModule

@@ -1,16 +1,25 @@
 package com.magenta.guice.decorator;
 
-import com.google.inject.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.BindingAnnotation;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Module;
+import com.google.inject.Scopes;
+import com.google.inject.Stage;
 import com.google.inject.spi.RecordingBinder;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 /**
  * Project: Maxifier
@@ -66,7 +75,7 @@ public class DecoratorTest {
         assertEquals(testResult, waited);
     }
 
-    @Test(expectedExceptions = DuplicateMemberException.class)
+    @Test(expected = DuplicateMemberException.class)
     public void testEqualBindAndTo() {
         new Decorator(new RecordingBinder(Stage.TOOL))
                 .bind(HelloService.class)
@@ -74,7 +83,7 @@ public class DecoratorTest {
 
     }
 
-    @Test(expectedExceptions = DuplicateMemberException.class)
+    @Test(expected = DuplicateMemberException.class)
     public void testEqualToAndDecorated() {
         new Decorator(new RecordingBinder(Stage.TOOL))
                 .bind(HelloService.class)
@@ -216,7 +225,7 @@ public class DecoratorTest {
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
     @BindingAnnotation
-            @interface TestAnnotation {
+    @interface TestAnnotation {
     }
 
     static class HelloRealization implements HelloService {

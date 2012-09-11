@@ -1,21 +1,32 @@
 package com.magenta.guice.jpa;
 
-import com.google.inject.Binder;
+import static com.magenta.guice.jpa.DB.Transaction.NOT_REQUIRED;
+
+import com.google.inject.Binding;
+import com.google.inject.BindingAnnotation;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Provider;
-import com.google.inject.matcher.Matchers;
+import com.google.inject.TypeLiteral;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
+import com.google.inject.spi.TypeEncounter;
+import com.google.inject.spi.TypeListener;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
-import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.metamodel.Metamodel;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.WeakHashMap;
-
-import static com.magenta.guice.jpa.DB.Transaction.NOT_REQUIRED;
 
 /**
  * Project: Maxifier
@@ -26,50 +37,96 @@ import static com.magenta.guice.jpa.DB.Transaction.NOT_REQUIRED;
  * Magenta Technology proprietary and confidential.
  * Use is subject to license terms.
  */
-final class DBInterceptor implements MethodInterceptor, Provider<EntityManager> {
+final class DBInterceptor implements MethodInterceptor, TypeListener {
 
-    private final ThreadLocal<EntityManager> context = new ThreadLocal<EntityManager>();
-    private final Map<Method, DB> methodsCache = new WeakHashMap<Method, DB>();
+    /**
+     * Annotation for default @DB usage.
+     * Unique name to be not overridden.
+     */
+    private final static Named DEFAULT = Names.named(UUID.randomUUID().toString());
 
-    private EntityManagerFactory emf;
+    /**
+     * EntityManagers contexts of current thread.
+     * One context per one binding annotation.
+     */
+    private final Map<Object, ThreadLocal<EntityManager>> contexts = new HashMap<Object, ThreadLocal<EntityManager>>();
+
+    /**
+     * Last used context of this thread is here
+     */
+    private final ThreadLocal<EntityManager> currentContext = new ThreadLocal<EntityManager>();
+
+    /**
+     * Cache for EMFs
+     */
+    private final Map<Object, Provider<EntityManagerFactory>> emfsCache = new HashMap<Object, Provider<EntityManagerFactory>>();
+
+    /**
+     * Method cache for annotations.
+     * Annotation[] array: [0] - @DB, [1] - binding Annotation.
+     */
+    private final Map<Method, Annotation[]> methodsCache = new WeakHashMap<Method, Annotation[]>();
+
+    /**
+     * List of used with annotations needed to be checked.
+     */
+    private final List<Annotation[]> awaiting = new LinkedList<Annotation[]>();
+
+    /**
+     * Does this interceptor prepared to work?
+     */
+    private volatile boolean prepared = false;
 
     @Inject
-    public void setEmf(EntityManagerFactory emf) {
-        this.emf = emf;
-    }
-
-
-    @Override
-    public EntityManager get() {
-        return new EntityManagerWrapper();
-    }
-
-    private DB getDBAnnotation(Method method) {
-        DB db = methodsCache.get(method);
-        if (db == null) {
-            db = method.getAnnotation(DB.class);
-            if (db == null) {
-                throw new IllegalStateException("It's illegal state, this method must not be intercepted." +
-                        " Use necessary matcher for DBInterceptor");
+    synchronized void prepare(Injector injector) {
+        //find all EMFs
+        List<Binding<EntityManagerFactory>> bindingsByType
+                = injector.findBindingsByType(TypeLiteral.get(EntityManagerFactory.class));
+        //prepare emfs cache and contexts
+        for (Binding<EntityManagerFactory> binding : bindingsByType) {
+            Key<EntityManagerFactory> key = binding.getKey();
+            if (key.getAnnotation() != null) {
+                emfsCache.put(key.getAnnotation(), binding.getProvider());
+                contexts.put(key.getAnnotation(), new ThreadLocal<EntityManager>());
+            } else if (key.getAnnotationType() != null) {
+                emfsCache.put(key.getAnnotationType(), binding.getProvider());
+                contexts.put(key.getAnnotationType(), new ThreadLocal<EntityManager>());
+            } else {
+                //default binding
+                emfsCache.put(DEFAULT, binding.getProvider());
+                contexts.put(DEFAULT, new ThreadLocal<EntityManager>());
             }
-            methodsCache.put(method, db);
-
         }
-        return db;
+        prepared = true;
     }
+
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
-        DB dbAnnotation = getDBAnnotation(invocation.getMethod());
+        //check is prepared?
+        if (!prepared) {
+            throw new IllegalStateException("DBInterceptor is not ready but called from method");
+        }
+        //get method info
+        Method method = invocation.getMethod();
+        Annotation[] annotations = getAnnotations(method);
+        DB dbAnnotation = (DB) annotations[0];
+        Annotation bindingAnnotation = annotations[1];
         DB.Transaction transactionType = dbAnnotation.transaction();
 
         boolean owner = false;
+
+        ThreadLocal<EntityManager> context = get(bindingAnnotation);
         EntityManager entityManager = context.get();
         if (entityManager == null) {
-            entityManager = emf.createEntityManager();
+            EntityManagerFactory factory = getEntityManagerFactory(bindingAnnotation);
+            entityManager = factory.createEntityManager();
             context.set(entityManager);
             owner = true;
         }
+        //set current EM for this thread and save previous one
+        EntityManager previousContext = currentContext.get();
+        currentContext.set(entityManager);
 
         try {
             EntityTransaction transaction = entityManager.getTransaction();
@@ -101,6 +158,9 @@ final class DBInterceptor implements MethodInterceptor, Provider<EntityManager> 
             transaction.commit();
             return result;
         } finally {
+            //restore previous used context
+            currentContext.set(previousContext);
+            //make owner responsibilities
             if (owner) {
                 entityManager.close();
                 context.remove();
@@ -108,238 +168,153 @@ final class DBInterceptor implements MethodInterceptor, Provider<EntityManager> 
         }
     }
 
-    EntityManager _getEntityManager() {
+
+    EntityManagerFactory getEntityManagerFactory(Annotation bindingAnnotation) {
+        //may be cached?
+        Provider<EntityManagerFactory> factoryProvider = emfsCache.get(bindingAnnotation);
+        if (factoryProvider == null) {
+            //may be we have to look by class?
+            factoryProvider = emfsCache.get(bindingAnnotation.annotationType());
+            if (factoryProvider == null) {
+                //looks like we have no such EMF, incredible, but error
+                throw new IllegalStateException(
+                        String.format("EntityManagerFactory not found for this @DB method annotated with%s",
+                                bindingAnnotation != DEFAULT ? " " + bindingAnnotation : "out annotation"));
+            }
+        }
+        return factoryProvider.get();
+    }
+
+    ThreadLocal<EntityManager> get(Annotation bindingAnnotation) {
+        //get cached context
+        ThreadLocal<EntityManager> context = contexts.get(bindingAnnotation);
+        if (context == null) {
+            context = contexts.get(bindingAnnotation.annotationType());
+            if (context == null) {
+                //looks like we have no such EMF, incredible, but error
+                throw new IllegalStateException(
+                        String.format("EntityManager context not found for this @DB method annotated with%s",
+                                bindingAnnotation != DEFAULT ? " " + bindingAnnotation : "out annotation"));
+            }
+        }
+        return context;
+    }
+
+    @Deprecated
+    EntityManager _getEntityManager(Annotation bindingAnnotation) {
+        if (bindingAnnotation == null) {
+            bindingAnnotation = DEFAULT;
+        }
+        ThreadLocal<EntityManager> context = contexts.get(bindingAnnotation);
+        if (context == null) {
+            context = new ThreadLocal<EntityManager>();
+            contexts.put(bindingAnnotation, context);
+        }
         EntityManager entityManager = context.get();
         if (entityManager == null) {
-            entityManager = emf.createEntityManager();
+            EntityManagerFactory factory = getEntityManagerFactory(bindingAnnotation);
+            entityManager = factory.createEntityManager();
             context.set(entityManager);
         }
         return entityManager;
     }
 
-    void _removeEntityManager() {
+    @Deprecated
+    void _removeEntityManager(Annotation bindingAnnotation) {
+        if (bindingAnnotation == null) {
+            bindingAnnotation = DEFAULT;
+        }
+        ThreadLocal<EntityManager> context = contexts.get(bindingAnnotation);
+        if (context == null) {
+            context = new ThreadLocal<EntityManager>();
+            contexts.put(bindingAnnotation, context);
+        }
         context.remove();
     }
 
-    public static void bind(Binder binder) {
-        DBInterceptor instance = new DBInterceptor();
-        binder.requestInjection(instance);
-        binder.bindInterceptor(Matchers.any(), Matchers.annotatedWith(DB.class), instance);
-        binder.bind(EntityManager.class).toProvider(instance);
+    Annotation[] getAnnotations(Method method) {
+        Annotation[] annotations = methodsCache.get(method);
+        if (annotations == null) {
+            DB db = method.getAnnotation(DB.class);
+            if (db == null) {
+                throw new IllegalStateException("It's illegal state, this method must not be intercepted." +
+                        " Use necessary matcher for DBInterceptor");
+            }
+            Annotation bindingAnnotation = getBindingAnnotation(method);
+            annotations = new Annotation[]{db, bindingAnnotation};
+            methodsCache.put(method, annotations);
+
+        }
+        return annotations;
+    }
+
+    Annotation getBindingAnnotation(Method method) {
+        Annotation[] annotations = method.getAnnotations();
+        Annotation found = null;
+        for (Annotation annotation : annotations) {
+            if (annotation.annotationType().isAnnotationPresent(BindingAnnotation.class)) {
+                if (found == null) {
+                    found = annotation;
+                } else {
+                    throw new IllegalStateException(String.format("At least two binding annotations used with @DB method." +
+                            " Should be one only. Annotations: %s, %s", annotation.toString(), found.toString()));
+                }
+            }
+        }
+        return found != null ? found : DEFAULT;
     }
 
 
-    private class EntityManagerWrapper implements EntityManager {
-
-        private EntityManager getEM() {
-            EntityManager entityManager = context.get();
-            if (entityManager == null) {
-                throw new IllegalStateException("Entity Manager used in the method without @DB annotation.");
+    @Override
+    public synchronized <I> void hear(TypeLiteral<I> type, TypeEncounter<I> encounter) {
+        Class<? super I> rawType = type.getRawType();
+        while (rawType != Object.class) {
+            for (Method method : rawType.getDeclaredMethods()) {
+                if (method.isAnnotationPresent(DB.class)) {
+                    try {
+                        Annotation[] annotations = getAnnotations(method);
+                        if (!prepared) {
+                            awaiting.add(annotations);
+                        } else {
+                            checkAndCache(annotations, method);
+                            if (!awaiting.isEmpty()) {
+                                for (Annotation[] v : awaiting) {
+                                    checkAndCache(v, method);
+                                }
+                                awaiting.clear();
+                            }
+                        }
+                    } catch (Exception e) {
+                        encounter.addError(e);
+                    }
+                }
             }
-            return entityManager;
+            //noinspection unchecked
+            rawType = rawType.getSuperclass();
         }
+    }
 
-        @Override
-        public void close() {
-            //ignore programmer trying to close entity manager.
-            //getEM().close();
+    private void checkAndCache(Annotation[] annotations, Method method) {
+        Annotation binding = annotations[1];
+        if (binding == null) {
+            binding = DEFAULT;
         }
-
-
-        @Override
-        public void persist(Object entity) {
-            getEM().persist(entity);
+        if (!emfsCache.containsKey(binding) && !emfsCache.containsKey(binding.annotationType())) {
+            String s;
+            if (binding == DEFAULT) {
+                s = "Container contains @DB without binding annotations," +
+                        " but no one EntityManagerFactory without binding annotations declared.";
+            } else {
+                s = String.format("Container contains @DB method annotated with %s," +
+                        " but no one EntityManagerFactory declared  with this annotations", binding);
+            }
+            throw new IllegalStateException(s);
+        } else {
+            methodsCache.put(method, annotations);
         }
+    }
 
-        @Override
-        public <T> T merge(T entity) {
-            return getEM().merge(entity);
-        }
-
-        @Override
-        public void remove(Object entity) {
-            getEM().remove(entity);
-        }
-
-        @Override
-        public <T> T find(Class<T> entityClass, Object primaryKey) {
-            return getEM().find(entityClass, primaryKey);
-        }
-
-        @Override
-        public <T> T find(Class<T> tClass, Object o, Map<String, Object> stringObjectMap) {
-            return getEM().find(tClass, o, stringObjectMap);
-        }
-
-        @Override
-        public <T> T find(Class<T> tClass, Object o, LockModeType lockModeType) {
-            return getEM().find(tClass, o, lockModeType);
-        }
-
-        @Override
-        public <T> T find(Class<T> tClass, Object o, LockModeType lockModeType, Map<String, Object> stringObjectMap) {
-            return getEM().find(tClass, o, lockModeType, stringObjectMap);
-        }
-
-        @Override
-        public <T> T getReference(Class<T> entityClass, Object primaryKey) {
-            return getEM().getReference(entityClass, primaryKey);
-        }
-
-        @Override
-        public void flush() {
-            getEM().flush();
-        }
-
-        @Override
-        public void setFlushMode(FlushModeType flushMode) {
-            getEM().setFlushMode(flushMode);
-        }
-
-        @Override
-        public FlushModeType getFlushMode() {
-            return getEM().getFlushMode();
-        }
-
-        @Override
-        public void lock(Object entity, LockModeType lockMode) {
-            getEM().lock(entity, lockMode);
-        }
-
-        @Override
-        public void lock(Object o, LockModeType lockModeType, Map<String, Object> stringObjectMap) {
-            getEM().lock(o, lockModeType, stringObjectMap);
-        }
-
-        @Override
-        public void refresh(Object entity) {
-            getEM().refresh(entity);
-        }
-
-        @Override
-        public void refresh(Object o, Map<String, Object> stringObjectMap) {
-            getEM().refresh(o, stringObjectMap);
-        }
-
-        @Override
-        public void refresh(Object o, LockModeType lockModeType) {
-            getEM().refresh(o, lockModeType);
-        }
-
-        @Override
-        public void refresh(Object o, LockModeType lockModeType, Map<String, Object> stringObjectMap) {
-            getEM().refresh(o, lockModeType, stringObjectMap);
-        }
-
-        @Override
-        public void clear() {
-            getEM().clear();
-        }
-
-        @Override
-        public void detach(Object o) {
-            getEM().detach(o);
-        }
-
-        @Override
-        public boolean contains(Object entity) {
-            return getEM().contains(entity);
-        }
-
-        @Override
-        public LockModeType getLockMode(Object o) {
-            return getEM().getLockMode(o);
-        }
-
-        @Override
-        public void setProperty(String s, Object o) {
-            getEM().setProperty(s, o);
-        }
-
-        @Override
-        public Map<String, Object> getProperties() {
-            return getEM().getProperties();
-        }
-
-        @Override
-        public Query createQuery(String ejbqlString) {
-            return getEM().createQuery(ejbqlString);
-        }
-
-        @Override
-        public <T> TypedQuery<T> createQuery(CriteriaQuery<T> tCriteriaQuery) {
-            return getEM().createQuery(tCriteriaQuery);
-        }
-
-        @Override
-        public <T> TypedQuery<T> createQuery(String s, Class<T> tClass) {
-            return getEM().createQuery(s, tClass);
-        }
-
-        @Override
-        public Query createNamedQuery(String name) {
-            return getEM().createNamedQuery(name);
-        }
-
-        @Override
-        public <T> TypedQuery<T> createNamedQuery(String s, Class<T> tClass) {
-            return getEM().createNamedQuery(s, tClass);
-        }
-
-        @Override
-        public Query createNativeQuery(String sqlString) {
-            return getEM().createNativeQuery(sqlString);
-        }
-
-        @Override
-        public Query createNativeQuery(String sqlString, Class resultClass) {
-            return getEM().createNativeQuery(sqlString, resultClass);
-        }
-
-        @Override
-        public Query createNativeQuery(String sqlString, String resultSetMapping) {
-            return getEM().createNativeQuery(sqlString, resultSetMapping);
-        }
-
-        @Override
-        public void joinTransaction() {
-            getEM().joinTransaction();
-        }
-
-        @Override
-        public <T> T unwrap(Class<T> tClass) {
-            return getEM().unwrap(tClass);
-        }
-
-        @Override
-        public Object getDelegate() {
-            return getEM().getDelegate();
-        }
-
-        @Override
-        public boolean isOpen() {
-            return getEM().isOpen();
-        }
-
-        @Override
-        public EntityTransaction getTransaction() {
-            return getEM().getTransaction();
-        }
-
-        @Override
-        public EntityManagerFactory getEntityManagerFactory() {
-            return getEM().getEntityManagerFactory();
-        }
-
-        @Override
-        public CriteriaBuilder getCriteriaBuilder() {
-            return getEM().getCriteriaBuilder();
-        }
-
-        @Override
-        public Metamodel getMetamodel() {
-            return getEM().getMetamodel();
-        }
-
+    public EntityManager current() {
+        return currentContext.get();
     }
 }

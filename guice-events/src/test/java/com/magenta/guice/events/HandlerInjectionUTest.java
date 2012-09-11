@@ -1,9 +1,17 @@
 package com.magenta.guice.events;
 
-import com.google.inject.*;
-import static org.mockito.Mockito.*;
-import static org.testng.Assert.assertEquals;
-import org.testng.annotations.Test;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Singleton;
+import org.junit.Test;
 
 /**
  * Created by IntelliJ IDEA.
@@ -11,7 +19,6 @@ import org.testng.annotations.Test;
  * Date: 18.06.2009
  * Time: 10:55:37
  */
-@Test
 public class HandlerInjectionUTest {
     private interface SomeService {
         @Handler

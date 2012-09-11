@@ -1,9 +1,15 @@
 package com.magenta.guice.property.converter;
 
-import com.google.inject.*;
+import static org.junit.Assert.assertEquals;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.TypeLiteral;
 import com.magenta.guice.property.Property;
 import com.magenta.guice.property.PropertyModule;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -12,8 +18,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.testng.Assert.assertEquals;
 
 public class DateFormatTypeConverterTest {
     @Test

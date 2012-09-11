@@ -1,5 +1,8 @@
 package com.maxifier.guice.mbean;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 import com.google.inject.Key;
 import com.google.inject.MembersInjector;
 import com.google.inject.Provider;
@@ -9,12 +12,9 @@ import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.Message;
 import com.google.inject.spi.TypeEncounter;
 import org.aopalliance.intercept.MethodInterceptor;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import java.lang.reflect.Method;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 /*
 * Project: Smart Advertising

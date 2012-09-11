@@ -1,11 +1,12 @@
 package com.magenta.guice.events;
 
-import org.testng.annotations.Test;
-
-import java.util.LinkedList;
 
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+
+import org.junit.Test;
+
+import java.util.LinkedList;
 
 /*
 * Project: Maxifier
@@ -16,7 +17,6 @@ import static org.mockito.Mockito.verify;
 * Magenta Technology proprietary and confidential.
 * Use is subject to license terms.
 */
-@Test
 public class HandlerForAllTest {
 
     @Test

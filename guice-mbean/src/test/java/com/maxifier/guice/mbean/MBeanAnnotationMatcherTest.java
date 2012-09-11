@@ -1,10 +1,11 @@
 package com.maxifier.guice.mbean;
 
-import com.google.inject.TypeLiteral;
-import org.testng.annotations.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import com.google.inject.TypeLiteral;
+import org.junit.Test;
+
 
 public class MBeanAnnotationMatcherTest {
     @Test

@@ -1,14 +1,20 @@
 package com.magenta.guice.override;
 
-import com.google.inject.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.PrivateModule;
+import com.google.inject.Scopes;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
-import com.google.inject.util.Modules;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
 /*
 * Project: Maxifier
 * Author: Aleksey Didik
@@ -110,7 +116,7 @@ public class OverrideModuleTest {
         };
 
         Foo instance = Guice.createInjector(OverrideModule.collect(m1, m2)).getInstance(Foo.class);
-        assertEquals(instance.bu, "world", "Overridden value expected");
+        assertEquals(instance.bu, "world");
     }
 
     static class Foo {

@@ -3,7 +3,7 @@ package com.magenta.guice.plugins;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.magenta.guice.bootstrap.plugins.PluginsManager;
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -18,7 +18,6 @@ import java.lang.reflect.InvocationTargetException;
 * Use is subject to license terms.
 */
 
-@Test
 public class PluginsManagerTest {
 
 

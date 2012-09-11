@@ -1,12 +1,12 @@
 package com.magenta.guice.scope;
 
+import static org.junit.Assert.assertEquals;
+
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
-import org.testng.annotations.Test;
-
-import static org.testng.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  * Created by: Aleksey Didik

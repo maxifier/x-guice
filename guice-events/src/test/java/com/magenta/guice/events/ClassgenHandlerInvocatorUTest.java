@@ -1,9 +1,13 @@
 package com.magenta.guice.events;
 
-import static org.mockito.Mockito.*;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNull;
-import org.testng.annotations.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
+import org.junit.Test;
 
 /**
  * Created by IntelliJ IDEA.
@@ -11,7 +15,6 @@ import org.testng.annotations.Test;
  * Date: 30.06.2009
  * Time: 8:48:58
  */
-@Test
 public class ClassgenHandlerInvocatorUTest {
     public interface TestInvoker {
         public void doIt(String s);

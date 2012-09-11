@@ -1,10 +1,16 @@
 package com.magenta.guice.lifecycle;
 
-import com.google.inject.*;
-import com.magenta.guice.lifecycle.Lifecycle;
-import com.magenta.guice.lifecycle.LifecycleModule;
-import static org.testng.Assert.*;
-import org.testng.annotations.*;
+import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Scopes;
+import com.google.inject.Singleton;
+import org.junit.Test;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;

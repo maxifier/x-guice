@@ -1,11 +1,14 @@
 package com.magenta.guice.property.converter;
 
-import com.google.inject.TypeLiteral;
-import org.testng.annotations.Test;
+import static com.magenta.guice.property.converter.ArrayTypeConverter.BOOLEAN_ARRAY_CONVERTER;
+import static com.magenta.guice.property.converter.ArrayTypeConverter.DOUBLE_ARRAY_CONVERTER;
+import static com.magenta.guice.property.converter.ArrayTypeConverter.INT_ARRAY_CONVERTER;
+import static com.magenta.guice.property.converter.ArrayTypeConverter.STRING_ARRAY_CONVERTER;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import static com.magenta.guice.property.converter.ArrayTypeConverter.*;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import com.google.inject.TypeLiteral;
+import org.junit.Test;
 
 /**
  * Project: Maxifier
@@ -61,8 +64,8 @@ public class ArrayTypeConverterTest {
     public void testDouble() {
         ArrayTypeConverter converter = DOUBLE_ARRAY_CONVERTER;
         double[] result = (double[]) converter.convert("1.33;3.7,  4", TypeLiteral.get(Double[].class));
-        assertEquals(result[0], 1.33);
-        assertEquals(result[1], 3.7);
-        assertEquals(result[2], 4.0);
+        assertEquals(result[0], 1.33, 0.0001);
+        assertEquals(result[1], 3.7, 0.0001);
+        assertEquals(result[2], 4.0, 0.0001);
     }
 }

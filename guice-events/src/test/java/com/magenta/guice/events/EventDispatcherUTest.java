@@ -1,14 +1,19 @@
 package com.magenta.guice.events;
 
-import org.testng.annotations.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
+import org.junit.Test;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 
-import static org.mockito.Mockito.*;
-import static org.testng.Assert.*;
-
-@Test
 public class EventDispatcherUTest {
 
     interface Listener {
@@ -47,7 +52,7 @@ public class EventDispatcherUTest {
         verifyNoMoreInteractions(listener);
     }
 
-    @Test(expectedExceptions = CyclicFilterAnnotationException.class)
+    @Test(expected = CyclicFilterAnnotationException.class)
     public void testCyclicAnnotations1() {
         class Test1 {
             @Handler
@@ -60,7 +65,7 @@ public class EventDispatcherUTest {
         d.register(new Test1());
     }
 
-    @Test(expectedExceptions = CyclicFilterAnnotationException.class)
+    @Test(expected = CyclicFilterAnnotationException.class)
     public void testCyclicAnnotations2() {
         class Test2 {
             @Handler
@@ -73,7 +78,7 @@ public class EventDispatcherUTest {
         d.register(new Test2());
     }
 
-    @Test(expectedExceptions = CyclicFilterAnnotationException.class)
+    @Test(expected = CyclicFilterAnnotationException.class)
     public void testAutoAnnotated() {
         class TestAuto {
             @Handler
@@ -86,7 +91,7 @@ public class EventDispatcherUTest {
         d.register(new TestAuto());
     }
 
-    @Test(expectedExceptions = RuntimeException.class)
+    @Test(expected = RuntimeException.class)
     public void testEmptyHandler() {
         class Test1 {
             @Handler
@@ -114,14 +119,14 @@ public class EventDispatcherUTest {
 
             @Override
             protected synchronized void unhandledEvent(Object event) {
-                assertFalse(b, "unhandled event passed twice");
-                assertEquals(event, "event");
+                assertFalse("unhandled event passed twice", b);
+                assertEquals("event", event);
                 b = true;
             }
         }
         TestEventDispatcher d = new TestEventDispatcher();
         d.fireEvent("event");
-        assertTrue(d.b, "unhandled event wasn't processed");
+        assertTrue("unhandled event wasn't processed", d.b);
     }
 
     @Test
