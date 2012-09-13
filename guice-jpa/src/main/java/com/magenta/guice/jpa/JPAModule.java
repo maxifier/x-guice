@@ -30,7 +30,7 @@ public class JPAModule implements Module {
         DBInterceptor interceptor = new DBInterceptor();
         builder.bind(DBInterceptor.class).toInstance(interceptor);
         builder.bindInterceptor(Matchers.any(), Matchers.annotatedWith(DB.class), interceptor);
-        builder.bind(EntityManager.class).to(EntityManagerWrapper.class).in(Scopes.SINGLETON);
+        builder.bind(EntityManager.class).toProvider(DBInterceptor.class).in(Scopes.SINGLETON);
         if (builder.currentStage() == Stage.PRODUCTION) {
             //examine used annotations
             builder.bindListener(new AnnotatedMethodMatcher(DB.class), interceptor);

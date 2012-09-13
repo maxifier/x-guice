@@ -13,6 +13,8 @@ import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.MethodProxy;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
@@ -37,7 +39,7 @@ import java.util.WeakHashMap;
  * Magenta Technology proprietary and confidential.
  * Use is subject to license terms.
  */
-final class DBInterceptor implements MethodInterceptor, TypeListener {
+final class DBInterceptor implements MethodInterceptor, TypeListener, Provider<EntityManager> {
 
     /**
      * Annotation for default @DB usage.
@@ -77,6 +79,12 @@ final class DBInterceptor implements MethodInterceptor, TypeListener {
      */
     private volatile boolean prepared = false;
 
+    /**
+     * This is delegate proxy for {@link EntityManager} calls.
+     */
+    @SuppressWarnings("EntityManagerInspection")
+    private EntityManager wrapper;
+
     @Inject
     synchronized void prepare(Injector injector) {
         //find all EMFs
@@ -97,6 +105,22 @@ final class DBInterceptor implements MethodInterceptor, TypeListener {
                 contexts.put(DEFAULT, new ThreadLocal<EntityManager>());
             }
         }
+        //create wrapper
+        Enhancer enhancer = new Enhancer();
+        enhancer.setInterfaces(new Class[]{EntityManager.class});
+        enhancer.setCallback(new net.sf.cglib.proxy.MethodInterceptor() {
+            @Override
+            public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+                if (method.getName().equals("close")) {
+                    //do nothing
+                    return null;
+                } else {
+                    return proxy.invoke(current(), args);
+                }
+
+            }
+        });
+        wrapper = (EntityManager) enhancer.create();
         prepared = true;
     }
 
@@ -300,6 +324,19 @@ final class DBInterceptor implements MethodInterceptor, TypeListener {
     }
 
     public EntityManager current() {
-        return currentContext.get();
+        EntityManager entityManager = currentContext.get();
+        if (entityManager == null) {
+            throw new IllegalStateException("EntityManager called in the method not annotated with @DB.");
+        }
+        return entityManager;
+    }
+
+    @Override
+    public EntityManager get() {
+        //check is prepared?
+        if (!prepared) {
+            throw new IllegalStateException("DBInterceptor is not ready but called from method");
+        }
+        return wrapper;
     }
 }

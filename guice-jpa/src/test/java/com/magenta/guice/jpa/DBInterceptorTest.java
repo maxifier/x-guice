@@ -389,6 +389,31 @@ public class DBInterceptorTest {
         }
     }
 
+    @Test
+    public void testJustInTimeWrongAnnotations() throws Exception {
+        Module module = new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(EntityManagerFactory.class).toInstance(defaultEMF);
+                bind(EntityManagerFactory.class).annotatedWith(Names.named("foo")).toInstance(fooEMF);
+                bind(EntityManagerFactory.class).annotatedWith(AdJuster.class).toInstance(adjusterEMF);
+            }
+        };
+
+        injector = Guice.createInjector(Stage.DEVELOPMENT, module, new JPAModule());
+        Bad instance = injector.getInstance(Bad.class);
+        try {
+            instance.doubleAnnotated();
+            fail("Double annotated method should not be called");
+        } catch (IllegalStateException ignored) {
+        }
+        try {
+            instance.notRegisteredAnnotation();
+            fail("Not registered annotation should not be served.");
+        } catch (IllegalStateException ignored) {
+        }
+    }
+
     @Retention(RetentionPolicy.RUNTIME)
     @BindingAnnotation
     @interface AdJuster {
