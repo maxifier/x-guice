@@ -10,7 +10,7 @@
     <groupId>com.maxifier.guice</groupId>
     <artifactId>x-guice</artifactId>
     <packaging>pom</packaging>
-    <version>3.0.19</version>
+    <version>3.0.20-SNAPSHOT</version>
     <name>XGuice</name>
     <description>Maxifier Guice eXtensions</description>
 
@@ -29,7 +29,7 @@
     </modules>
 
     <scm>
-        <connection>scm:svn:https://svn.maxifier.com/maxifier-projects/x-guice/tags/x-guice-3.0.19</connection>
+        <connection>scm:svn:https://svn.maxifier.com/maxifier-projects/x-guice/trunk</connection>
     </scm>
 
     <properties>
