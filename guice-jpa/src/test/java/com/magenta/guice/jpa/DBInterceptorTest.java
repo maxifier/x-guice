@@ -56,10 +56,16 @@ public class DBInterceptorTest {
     private EntityManagerFactory fooEMF;
 
     @Mock
+    private EntityManagerFactory otherEMF;
+
+    @Mock
     private EntityManagerFactory adjusterEMF;
 
     @Mock
     private EntityManager defaultEM;
+
+    @Mock
+    private EntityManager otherEM;
 
     @Mock
     private EntityManager fooEM;
@@ -84,10 +90,12 @@ public class DBInterceptorTest {
     public void setUp() throws Exception {
         when(defaultEMF.createEntityManager()).thenReturn(defaultEM);
         when(fooEMF.createEntityManager()).thenReturn(fooEM);
+        when(otherEMF.createEntityManager()).thenReturn(otherEM);
         when(adjusterEMF.createEntityManager()).thenReturn(adjusterEM);
 
         when(defaultEM.getTransaction()).thenReturn(transaction);
         when(fooEM.getTransaction()).thenReturn(fooTransaction);
+        when(otherEM.getTransaction()).thenReturn(transaction);
         when(adjusterEM.getTransaction()).thenReturn(adjusterTransaction);
 
         Module module = new AbstractModule() {
@@ -95,6 +103,7 @@ public class DBInterceptorTest {
             protected void configure() {
                 bind(EntityManagerFactory.class).toInstance(defaultEMF);
                 bind(EntityManagerFactory.class).annotatedWith(Names.named("foo")).toInstance(fooEMF);
+                bind(EntityManagerFactory.class).annotatedWith(Names.named("other")).toInstance(otherEMF);
                 bind(EntityManagerFactory.class).annotatedWith(AdJuster.class).toInstance(adjusterEMF);
             }
         };
@@ -110,6 +119,7 @@ public class DBInterceptorTest {
         verify(defaultEMF).createEntityManager();
         verify(adjusterEMF, never()).createEntityManager();
         verify(fooEMF, never()).createEntityManager();
+        verify(otherEMF, never()).createEntityManager();
         verify(transaction, never()).begin();
         verify(transaction, never()).commit();
         verify(transaction, never()).rollback();
@@ -153,6 +163,7 @@ public class DBInterceptorTest {
         foo.fooDB();
         //verify
         verify(fooEMF).createEntityManager();
+        verify(otherEMF, never()).createEntityManager();
         verify(defaultEMF, never()).createEntityManager();
         verify(adjusterEMF, never()).createEntityManager();
         verify(fooEM).flush();
@@ -470,6 +481,12 @@ public class DBInterceptorTest {
         @Named("foo")
         void fooDoubleDB() {
             fooDB();
+        }
+
+        @DB
+        @Named("other")
+        void otherNamed() {
+            em.flush();
         }
 
         @DB
