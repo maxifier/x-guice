@@ -394,7 +394,6 @@ public class DBInterceptorTest {
         Module module = new AbstractModule() {
             @Override
             protected void configure() {
-                bind(EntityManagerFactory.class).toInstance(defaultEMF);
                 bind(EntityManagerFactory.class).annotatedWith(Names.named("foo")).toInstance(fooEMF);
                 bind(EntityManagerFactory.class).annotatedWith(AdJuster.class).toInstance(adjusterEMF);
             }
@@ -412,7 +411,19 @@ public class DBInterceptorTest {
             fail("Not registered annotation should not be served.");
         } catch (IllegalStateException ignored) {
         }
+        try {
+            instance.withUnexistedDefault();
+            fail("Not registered annotation should not be served.");
+        } catch (IllegalStateException ignored) {
+        }
     }
+
+    @Test
+    public void testCloseIsNotClosing() throws Exception {
+        foo.close();
+        verify(defaultEM, times(1)).close();
+    }
+
 
     @Retention(RetentionPolicy.RUNTIME)
     @BindingAnnotation
@@ -529,6 +540,10 @@ public class DBInterceptorTest {
             throw new FooException();
         }
 
+        @DB
+        public void close() {
+            em.close();
+        }
     }
 
     static class ConstructorCall {
@@ -564,6 +579,11 @@ public class DBInterceptorTest {
         @DB
         @Wrong
         void notRegisteredAnnotation() {
+
+        }
+
+        @DB
+        void withUnexistedDefault() {
 
         }
 
