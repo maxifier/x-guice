@@ -29,7 +29,9 @@
     </modules>
 
     <scm>
-        <connection>scm:git:https://github.com/maxifier/x-guice.git</connection>
+        <url>https://github.com/maxifier/x-guice.git</url>
+        <connection>scm:git:git://github.com/maxifier/x-guice.git</connection>
+        <developerConnection>scm:https:git://github.com/maxifier/x-guice.git</developerConnection>
     </scm>
 
     <properties>
