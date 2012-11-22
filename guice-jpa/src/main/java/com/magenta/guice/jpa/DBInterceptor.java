@@ -61,7 +61,7 @@ final class DBInterceptor implements MethodInterceptor, TypeListener, Provider<E
     /**
      * Cache for EMFs
      */
-    private final Map<Object, Provider<EntityManagerFactory>> emfsCache = new HashMap<Object, Provider<EntityManagerFactory>>();
+    private final Map<Object, EntityManagerFactory> emfsCache = new HashMap<Object, EntityManagerFactory>();
 
     /**
      * Method cache for annotations.
@@ -94,14 +94,14 @@ final class DBInterceptor implements MethodInterceptor, TypeListener, Provider<E
         for (Binding<EntityManagerFactory> binding : bindingsByType) {
             Key<EntityManagerFactory> key = binding.getKey();
             if (key.getAnnotation() != null) {
-                emfsCache.put(key.getAnnotation(), binding.getProvider());
+                emfsCache.put(key.getAnnotation(), binding.getProvider().get());
                 contexts.put(key.getAnnotation(), new ThreadLocal<EntityManager>());
             } else if (key.getAnnotationType() != null) {
-                emfsCache.put(key.getAnnotationType(), binding.getProvider());
+                emfsCache.put(key.getAnnotationType(), binding.getProvider().get());
                 contexts.put(key.getAnnotationType(), new ThreadLocal<EntityManager>());
             } else {
                 //default binding
-                emfsCache.put(DEFAULT, binding.getProvider());
+                emfsCache.put(DEFAULT, binding.getProvider().get());
                 contexts.put(DEFAULT, new ThreadLocal<EntityManager>());
             }
         }
@@ -195,18 +195,18 @@ final class DBInterceptor implements MethodInterceptor, TypeListener, Provider<E
 
     EntityManagerFactory getEntityManagerFactory(Annotation bindingAnnotation) {
         //may be cached?
-        Provider<EntityManagerFactory> factoryProvider = emfsCache.get(bindingAnnotation);
-        if (factoryProvider == null) {
+        EntityManagerFactory factory = emfsCache.get(bindingAnnotation);
+        if (factory == null) {
             //may be we have to look by class?
-            factoryProvider = emfsCache.get(bindingAnnotation.annotationType());
-            if (factoryProvider == null) {
+            factory = emfsCache.get(bindingAnnotation.annotationType());
+            if (factory == null) {
                 //looks like we have no such EMF, incredible, but error
                 throw new IllegalStateException(
                         String.format("EntityManagerFactory not found for this @DB method annotated with%s",
                                 bindingAnnotation != DEFAULT ? " " + bindingAnnotation : "out annotation"));
             }
         }
-        return factoryProvider.get();
+        return factory;
     }
 
     ThreadLocal<EntityManager> get(Annotation bindingAnnotation) {
