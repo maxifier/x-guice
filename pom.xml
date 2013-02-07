@@ -72,6 +72,7 @@
                     <preparationGoals>clean install</preparationGoals>
                     <goals>deploy sonar:sonar</goals>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <username>git</username>
                 </configuration>
             </plugin>
             <plugin>
