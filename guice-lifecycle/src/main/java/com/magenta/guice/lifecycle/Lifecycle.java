@@ -4,9 +4,12 @@ import com.google.inject.Binding;
 import com.google.inject.Injector;
 import com.google.inject.Scope;
 import com.google.inject.Scopes;
+import com.google.inject.internal.BindingImpl;
 import com.google.inject.internal.LinkedBindingImpl;
 import com.google.inject.spi.BindingScopingVisitor;
 import com.google.inject.spi.InstanceBinding;
+import com.google.inject.spi.ProviderInstanceBinding;
+import com.google.inject.spi.ProviderKeyBinding;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +18,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class provide methods for stop Injector and call @PreDestroy methods for all provides scopes. <br>
@@ -82,22 +89,31 @@ public final class Lifecycle {
         for (Binding<?> binding : injector.getBindings().values()) {
             //finish to Instance binding
             if (binding instanceof InstanceBinding) {
-                destroy(binding, errors);
+                destroy(((InstanceBinding) binding).getProvider().get(), errors);
+            }
+            if (binding instanceof ProviderInstanceBinding) {
+                destroy(binding.getProvider(), errors);
+            }
+
+            //finish Provider and ProviderInstance binding
+            if (binding instanceof ProviderKeyBinding<?>) {
+                //noinspection unchecked
+                Object providerInstance = injector.getInstance(((ProviderKeyBinding) binding).getProviderKey());
+                destroy(providerInstance, errors);
             }
             //finish scopes
             Scope scope = getLinkedScope(binding);
             if (inScopes.contains(scope)) {
-                destroy(binding, errors);
+                destroy(binding.getProvider().get(), errors);
             }
         }
         return errors;
     }
 
-    private static void destroy(Binding<?> binding, Errors errors) {
-        Object o = binding.getProvider().get();
-        for (Method method : o.getClass().getDeclaredMethods()) {
+    private static void destroy(Object destroyable, Errors errors) {
+        for (Method method : destroyable.getClass().getDeclaredMethods()) {
             if (method.isAnnotationPresent(PreDestroy.class)) {
-                invokePreDestroy(errors, o, method);
+                invokePreDestroy(errors, destroyable, method);
             }
         }
 

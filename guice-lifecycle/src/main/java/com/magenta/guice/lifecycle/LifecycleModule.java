@@ -102,9 +102,10 @@ public class LifecycleModule extends AbstractModule {
                         try {
                             method.invoke(injectee);
                         } catch (InvocationTargetException ie) {
-                            throw new ProvisionException(ie.getTargetException().getMessage(), ie.getTargetException());
+                            String message = ie.getTargetException().getMessage();
+                            throw new ProvisionException("Exception in @PostConstruct: " + message, ie.getTargetException());
                         } catch (IllegalAccessException e) {
-                            throw new ProvisionException(e.getMessage(), e);
+                            throw new ProvisionException("Exception in @PostConstruct: " + e.getMessage(), e);
                         }
                     }
                 }
