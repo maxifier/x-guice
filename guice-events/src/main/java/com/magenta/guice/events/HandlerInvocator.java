@@ -15,7 +15,6 @@ public abstract class HandlerInvocator<T, L> {
 
     public HandlerInvocator(Method method) {
         this.method = method;
-        method.setAccessible(true);
 
         Class<?>[] pt = method.getParameterTypes();
         if (pt.length > 1) {
@@ -33,7 +32,7 @@ public abstract class HandlerInvocator<T, L> {
         return method;
     }
 
-    public abstract Object invoke(L instance, T t);
+    public abstract Object invoke(L instance, T t) throws Exception;
 
     @Override
     public String toString() {

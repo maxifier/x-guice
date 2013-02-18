@@ -1,6 +1,5 @@
 package com.magenta.guice.events;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -12,20 +11,15 @@ import java.lang.reflect.Method;
 public class ReflectionHandlerInvocator<T, L> extends HandlerInvocator<T, L> {
     public ReflectionHandlerInvocator(Method method) {
         super(method);
+        method.setAccessible(true);
     }
 
     @Override
-    public Object invoke(L instance, T message) {
-        try {
-            if (paramType != null) {
-                return method.invoke(instance, message);
-            } else {
-                return method.invoke(instance);
-            }
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+    public Object invoke(L instance, T message) throws Exception {
+        if (paramType != null) {
+            return method.invoke(instance, message);
+        } else {
+            return method.invoke(instance);
         }
     }
 }

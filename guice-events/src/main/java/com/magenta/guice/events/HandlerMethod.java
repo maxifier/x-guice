@@ -34,7 +34,7 @@ class HandlerMethod<T> {
         return true;
     }
 
-    public void invokeHandler(@NotNull T listener, @NotNull Object o) {
+    public void invokeHandler(@NotNull T listener, @NotNull Object o) throws Exception {
         method.invoke(listener, o);
     }
 

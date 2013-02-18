@@ -28,17 +28,14 @@ class HandlerMethodInstance<T> implements HandlerMethodInfo {
 
     public boolean invokeIfMatched(@NotNull Object event) {
         matcherInvocations++;
-        if (method.isMatched(event)) {
-            return listenerClass.invokeHandler(this, event);
-        }
-        return false;
+        return method.isMatched(event) && listenerClass.invokeHandler(this, event);
     }
 
     public void invokeHandler(@NotNull T listener, @NotNull Object o) {
         methodInvocations++;
         try {
             method.invokeHandler(listener, o);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOG.warn("Unhandled exception in handler " + method, e);
         }
     }
