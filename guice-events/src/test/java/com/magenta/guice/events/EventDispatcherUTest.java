@@ -9,10 +9,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import junit.framework.Assert;
 import org.junit.Test;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class EventDispatcherUTest {
 
@@ -197,5 +199,74 @@ public class EventDispatcherUTest {
         assertEquals(tl.x, 3);
         verify(l).test("222");
         verifyNoMoreInteractions(l);
+    }
+
+    // https://jira.maxifier.com/browse/XGUICE-30
+    //
+    // Example of inverted stack trace:
+    // Thread 1:
+    //   -fireEvent  - holds readLock
+    //    -fireEvent0
+    //     -someHandler - tries to get lock X, but it has to wait for Thread 2.
+    //
+    // Thread 2:
+    //   -someMethod - holds lock X
+    //    -fireEvent    - holds readLock
+    //     -fireEvent0  - releases readLock
+    //             if event class never met before, it will waits for Thread 1 to acquire writeLock.
+    // I set so huge timeout because in case of deadlock it's hard it will hang forever, but at our build agents
+    // the time may vary greatly, even in simplest tests.
+    //
+    // This test is not really deterministic, it is stochastic, but in case of real deadlock it fails from time to time.,
+    @Test(timeout = 60000)
+    public void testDeadlockRegression() {
+        final EventDispatcherImpl d = new EventDispatcherImpl(new ListenerRegistrationQueue());
+        final Object lock = new Object();
+        final AtomicInteger v = new AtomicInteger();
+
+        d.register(new Object() {
+            @Handler
+            public void handle(Integer i) {
+                v.set(i);
+            }
+
+            @Handler
+            public void handle(String s) {
+                Thread t = new Thread() {
+                    @Override
+                    public void run() {
+                        synchronized (lock) {
+                            d.fireEvent(3);
+                        }
+                    }
+                };
+                t.start();
+
+                // we sleep a bit
+                sleepABit();
+
+                synchronized (lock) {
+                    sleepABit();
+                }
+
+                try {
+                    t.join();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        d.fireEvent("test");
+
+        Assert.assertEquals(v.get(), 3);
+    }
+
+    private void sleepABit() {
+        try {
+            Thread.sleep(100 + (int) (Math.random() * 10));
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

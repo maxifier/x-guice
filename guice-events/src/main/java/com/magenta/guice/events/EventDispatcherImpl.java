@@ -111,30 +111,64 @@ public class EventDispatcherImpl implements EventDispatcher {
 
     //NOSONAR
     private boolean fireEvent0(Object event) {
-        boolean handled = false;
         Class c = event.getClass();
-        List<HandlerMethodInstance> l = mapping.get(c);
-        if (l == null) {
-            readLock.unlock();
-            writeLock.lock();
-            try {
-                l = mapping.get(c);
-                if (l == null) {
-                    l = new ArrayList<HandlerMethodInstance>();
-                    mapping.put(c, l);
-                    for (ListenerClassInstance<?> cls : classInfos.values()) {
-                        cls.bindHandlers(l, c);
-                    }
-                }
-            } finally {
-                readLock.lock();
-                writeLock.unlock();
-            }
-        }
+        List<HandlerMethodInstance> l = getHandlerMethodInstances(c);
+        boolean handled = false;
         for (HandlerMethodInstance<?> method : l) {
             handled |= method.invokeIfMatched(event);
         }
         return handled;
+    }
+
+    private List<HandlerMethodInstance> getHandlerMethodInstances(Class c) {
+        List<HandlerMethodInstance> l = mapping.get(c);
+        if (l == null) {
+            readLock.unlock();
+            if (writeLock.tryLock()) {
+                try {
+                    l = mapping.get(c);
+                    if (l == null) {
+                        l = getHandlerMethodInstances0(c);
+                        mapping.put(c, l);
+                    }
+                } finally {
+                    readLock.lock();
+                    writeLock.unlock();
+                }
+
+            } else {
+                readLock.lock();
+                // https://jira.maxifier.com/browse/XGUICE-30
+                //
+                // If we can't acquire write lock, that might mean that another thread is holding it.
+                //
+                // Example of inverted stack trace:
+                // Thread 1:
+                //   -fireEvent  - holds readLock
+                //    -fireEvent0
+                //     -someHandler - tries to get lock X, but it has to wait for Thread 2.
+                //
+                // Thread 2:
+                //   -someMethod - holds lock X
+                //    -fireEvent    - holds readLock
+                //     -fireEvent0  - releases readLock
+                //             if event class never met before, it will waits for Thread 1 to acquire writeLock.
+                //
+                // In this case if we want to avoid deadlock, we will calculate list of methods, but not
+                // store it anywhere. Anyway, if intensity of queries is not too high, the cache will be filled.
+                l = getHandlerMethodInstances0(c);
+            }
+        }
+        return l;
+    }
+
+    // This method doesn't do any caching, don't call it unless you know what you are doing.
+    private List<HandlerMethodInstance> getHandlerMethodInstances0(Class c) {
+        List<HandlerMethodInstance> res = new ArrayList<HandlerMethodInstance>();
+        for (ListenerClassInstance<?> cls : classInfos.values()) {
+            cls.bindHandlers(res, c);
+        }
+        return res;
     }
 
     protected void unhandledEvent(Object event) {
