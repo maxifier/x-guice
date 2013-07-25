@@ -4,6 +4,7 @@ import com.google.inject.*;
 import com.google.inject.binder.AnnotatedBindingBuilder;
 import com.google.inject.binder.AnnotatedConstantBindingBuilder;
 import com.google.inject.binder.LinkedBindingBuilder;
+import com.google.inject.internal.ProviderMethodsModule;
 import com.google.inject.matcher.Matcher;
 import com.google.inject.spi.*;
 import com.google.inject.util.Modules;
@@ -31,7 +32,7 @@ public abstract class OverrideModule extends AbstractModule {
     public static Module collect(Iterable<Module> modules) {
         OverrideBinder ovBinder = new OverrideBinder();
         for (Module module : modules) {
-            module.configure(ovBinder);
+            ovBinder.install(module);
         }
         Module standarts = ovBinder.getStandardModule();
         Module overrides = ovBinder.getOverrideModule();
@@ -117,6 +118,7 @@ public abstract class OverrideModule extends AbstractModule {
                 standard.install(module);
             } else {
                 module.configure(this);
+                standard.install(ProviderMethodsModule.forModule(module));
             }
         }
 

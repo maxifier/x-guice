@@ -4,13 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.PrivateModule;
-import com.google.inject.Scopes;
+import com.google.inject.*;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.junit.Test;
@@ -125,4 +119,22 @@ public class OverrideModuleTest {
         String bu;
     }
 
+    @Test
+    public void testWithProvides() throws Exception {
+        Module m = new AbstractModule() {
+            @Override
+            public void configure() {
+                bind(String.class).annotatedWith(Names.named("foo")).toInstance("Hello");
+            }
+
+            @Provides
+            @Named("a")
+            public String provideA(@Named("foo") String foo) {
+                return foo + " world";
+            }
+        };
+
+        Foo instance = Guice.createInjector(OverrideModule.collect(m)).getInstance(Foo.class);
+        assertEquals(instance.bu, "Hello world");
+    }
 }
