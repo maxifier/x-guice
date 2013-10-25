@@ -7,6 +7,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -41,8 +42,8 @@ public final class PluginsManager {
         }
     };
 
-    public static Injector loadPlugins(Injector injector, File pluginsPath) {
-        Collection<ChildModule> modules = loadModules(pluginsPath);
+    public static Injector loadPlugins(Injector injector, File pluginsPath, @Nullable ClassLoader providedCL) {
+        Collection<ChildModule> modules = loadModules(pluginsPath, providedCL);
         for (ChildModule module : modules) {
             module.beforeChildInjectorCreating(injector);
             injector = injector.createChildInjector(module);
@@ -50,11 +51,11 @@ public final class PluginsManager {
         return injector;
     }
 
-    public static Collection<ChildModule> loadModules(File pluginsPath) {
+    public static Collection<ChildModule> loadModules(File pluginsPath, @Nullable ClassLoader providedCL) {
         checkPath(pluginsPath);
         URL[] jars = scanJars(pluginsPath);
-        ClassLoader baseInjCL = PluginsManager.class.getClassLoader();
-        ClassLoader pluginsCL = new URLClassLoader(jars, baseInjCL);
+        ClassLoader baseCL = PluginsManager.class.getClassLoader();
+        ClassLoader pluginsCL = providedCL == null ? new URLClassLoader(jars, baseCL) : providedCL;
         Collection<Plugin> plugins = scan(pluginsPath);
         Collection<ChildModule> modules = new ArrayList<ChildModule>();
         for (Plugin plugin : plugins) {
