@@ -1,7 +1,6 @@
 package com.magenta.guice.bootstrap.plugins;
 
 import com.google.inject.Injector;
-import com.google.inject.Module;
 import com.magenta.guice.bootstrap.model.Plugin;
 import com.magenta.guice.bootstrap.model.io.xpp3.XGuicePluginXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -42,18 +41,26 @@ public final class PluginsManager {
         }
     };
 
+    public static Injector loadPlugins(Injector injector, File pluginsPath) {
+        Collection<ChildModule> modules = loadModules(pluginsPath);
+        for (ChildModule module : modules) {
+            module.beforeChildInjectorCreating(injector);
+            injector = injector.createChildInjector(module);
+        }
+        return injector;
+    }
 
-    public static Collection<Module> loadModules(File pluginsPath) {
+    public static Collection<ChildModule> loadModules(File pluginsPath) {
         checkPath(pluginsPath);
         URL[] jars = scanJars(pluginsPath);
         ClassLoader baseInjCL = PluginsManager.class.getClassLoader();
         ClassLoader pluginsCL = new URLClassLoader(jars, baseInjCL);
         Collection<Plugin> plugins = scan(pluginsPath);
-        Collection<Module> modules = new ArrayList<Module>();
+        Collection<ChildModule> modules = new ArrayList<ChildModule>();
         for (Plugin plugin : plugins) {
             String moduleName = plugin.getModule();
             try {
-                modules.add((Module) pluginsCL.loadClass(moduleName).newInstance());
+                modules.add((ChildModule) pluginsCL.loadClass(moduleName).newInstance());
                 logger.info("Plugin {} has been loaded.", plugin.getName());
             } catch (InstantiationException e) {
                 logger.warn("Unable to instantiate module " + moduleName + " of plugin " + plugin.getName(), e);
@@ -67,33 +74,6 @@ public final class PluginsManager {
         }
         return modules;
     }
-
-    public static Injector loadPlugins(Injector injector, File pluginsPath) {
-        checkPath(pluginsPath);
-        URL[] jars = scanJars(pluginsPath);
-        ClassLoader baseInjCL = injector.getClass().getClassLoader();
-        ClassLoader pluginsCL = new URLClassLoader(jars, baseInjCL);
-        Collection<Plugin> plugins = scan(pluginsPath);
-        for (Plugin plugin : plugins) {
-            String moduleName = plugin.getModule();
-            try {
-                ChildModule module = (ChildModule) pluginsCL.loadClass(moduleName).newInstance();
-                module.beforeChildInjectorCreating(injector);
-                injector = injector.createChildInjector(module);
-                logger.info("Plugin {} has been loaded.", plugin.getName());
-            } catch (InstantiationException e) {
-                logger.warn("Unable to instantiate module " + moduleName + " of plugin " + plugin.getName(), e);
-            } catch (IllegalAccessException e) {
-                logger.warn("Unable to instantiate module " + moduleName + " of plugin " + plugin.getName(), e);
-            } catch (ClassCastException e) {
-                logger.warn("Old plugin! Unable to cast " + moduleName + " to new ChildModule " + plugin.getName(), e);
-            } catch (ClassNotFoundException e) {
-                logger.warn("Module class " + moduleName + " of plugin " + plugin.getName() + " is not found into classpath.", e);
-            }
-        }
-        return injector;
-    }
-
 
     private static URL[] scanJars(File pluginsPath) {
         //prepare jars URL
