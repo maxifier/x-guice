@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -42,7 +44,7 @@ public final class PluginsManager {
         }
     };
 
-    public static Injector loadPlugins(Injector injector, File pluginsPath, @Nullable ClassLoader providedCL) {
+    public static Injector loadPlugins(Injector injector, File pluginsPath, @Nullable URLClassLoader providedCL) {
         Collection<ChildModule> modules = loadModules(pluginsPath, providedCL);
         for (ChildModule module : modules) {
             module.beforeChildInjectorCreating(injector);
@@ -51,11 +53,17 @@ public final class PluginsManager {
         return injector;
     }
 
-    public static Collection<ChildModule> loadModules(File pluginsPath, @Nullable ClassLoader providedCL) {
+    public static Collection<ChildModule> loadModules(File pluginsPath, @Nullable URLClassLoader providedCL) {
         checkPath(pluginsPath);
         URL[] jars = scanJars(pluginsPath);
-        ClassLoader baseCL = PluginsManager.class.getClassLoader();
-        ClassLoader pluginsCL = providedCL == null ? new URLClassLoader(jars, baseCL) : providedCL;
+        ClassLoader pluginsCL;
+        if (providedCL == null) {
+            ClassLoader baseCL = PluginsManager.class.getClassLoader();
+            pluginsCL = new URLClassLoader(jars, baseCL);
+        } else {
+            addJarsToClassLoader(providedCL, jars);
+            pluginsCL = providedCL;
+        }
         Collection<Plugin> plugins = scan(pluginsPath);
         Collection<ChildModule> modules = new ArrayList<ChildModule>();
         for (Plugin plugin : plugins) {
@@ -74,6 +82,26 @@ public final class PluginsManager {
             }
         }
         return modules;
+    }
+
+    private static void addJarsToClassLoader(URLClassLoader providedCL, URL[] jars) {
+        Class urlClass = URLClassLoader.class;
+        Method method;
+        try {
+            method = urlClass.getDeclaredMethod("addURL", new Class[]{URL.class});
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+        method.setAccessible(true);
+        for (URL jar : jars) {
+            try {
+                method.invoke(providedCL, jar);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private static URL[] scanJars(File pluginsPath) {

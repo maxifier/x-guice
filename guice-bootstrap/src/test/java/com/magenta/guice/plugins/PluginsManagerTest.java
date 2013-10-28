@@ -6,7 +6,7 @@ import com.magenta.guice.bootstrap.plugins.PluginsManager;
 import org.junit.Test;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
+import java.net.URLClassLoader;
 
 /*
 * Project: Maxifier
@@ -20,10 +20,15 @@ import java.lang.reflect.InvocationTargetException;
 
 public class PluginsManagerTest {
 
+    @Test
+    public void testPluginManager() throws Exception {
+        Injector inj = Guice.createInjector(new MainModule());
+        PluginsManager.loadPlugins(inj, new File("src/test/jars"), null);
+    }
 
     @Test
-    public void testPluginManager() throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void testPluginManagerWithClassLoader() throws Exception {
         Injector inj = Guice.createInjector(new MainModule());
-        PluginsManager.loadPlugins(inj, new File("src/test/jars"));
+        PluginsManager.loadPlugins(inj, new File("src/test/jars"), (URLClassLoader) ClassLoader.getSystemClassLoader());
     }
 }
