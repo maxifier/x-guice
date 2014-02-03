@@ -9,21 +9,13 @@
     <name>XGuice::Events</name>
 
     <dependencies>
-
         <dependency>
             <groupId>com.maxifier.guice</groupId>
             <artifactId>guice-mbean</artifactId>
         </dependency>
-
         <dependency>
             <groupId>trove</groupId>
             <artifactId>trove</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-        </dependency>
-
-
     </dependencies>
 </project>

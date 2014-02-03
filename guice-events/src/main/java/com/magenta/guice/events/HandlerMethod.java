@@ -1,6 +1,5 @@
 package com.magenta.guice.events;
 
-import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -11,7 +10,7 @@ class HandlerMethod<T> {
     private final HandlerInvocator<Object, T> method;
     private final Class paramType;
 
-    public HandlerMethod(@NotNull List<EventMatcher> matchers, @NotNull List<EventClassMatcher> classMatchers, @NotNull HandlerInvocator<Object, T> method) {
+    public HandlerMethod(List<EventMatcher> matchers, List<EventClassMatcher> classMatchers, HandlerInvocator<Object, T> method) {
         this.matchers = matchers;
         this.classMatchers = classMatchers;
         this.method = method;
@@ -22,7 +21,7 @@ class HandlerMethod<T> {
         }
     }
 
-    public boolean checkClass(@NotNull Class c) {
+    public boolean checkClass(Class c) {
         if (paramType != null && !paramType.isAssignableFrom(c)) {
             return false;
         }
@@ -34,12 +33,12 @@ class HandlerMethod<T> {
         return true;
     }
 
-    public void invokeHandler(@NotNull T listener, @NotNull Object o) throws Exception {
+    public void invokeHandler(T listener, Object o) throws Exception {
         method.invoke(listener, o);
     }
 
     @SuppressWarnings({"unchecked"})
-    public boolean isMatched(@NotNull Object event) {
+    public boolean isMatched(Object event) {
         for (EventMatcher matcher : matchers) {
             if (!matcher.matches(event)) {
                 return false;

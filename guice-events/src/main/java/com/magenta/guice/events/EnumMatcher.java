@@ -1,6 +1,5 @@
 package com.magenta.guice.events;
 
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -24,7 +23,7 @@ public class EnumMatcher<T extends Enum<T>> implements EventMatcher<T> {
     }
 
     @Override
-    public boolean matches(@NotNull T event) {
+    public boolean matches(T event) {
         return enums == null || enums.contains(event);
     }
 }

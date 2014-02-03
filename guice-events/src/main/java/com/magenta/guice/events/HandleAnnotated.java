@@ -1,6 +1,5 @@
 package com.magenta.guice.events;
 
-import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.*;
 
@@ -24,7 +23,7 @@ public @interface HandleAnnotated {
         }
 
         @Override
-        public boolean matches(@NotNull Class event) {
+        public boolean matches(Class event) {
             for (Class<? extends Annotation> c : value) {
                 if (event.isAnnotationPresent(c)) {
                     return true;

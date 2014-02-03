@@ -1,6 +1,5 @@
 package com.magenta.guice.events;
 
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,12 +25,12 @@ class HandlerMethodInstance<T> implements HandlerMethodInfo {
         this.listenerClass = listenerClass;
     }
 
-    public boolean invokeIfMatched(@NotNull Object event) {
+    public boolean invokeIfMatched(Object event) {
         matcherInvocations++;
         return method.isMatched(event) && listenerClass.invokeHandler(this, event);
     }
 
-    public void invokeHandler(@NotNull T listener, @NotNull Object o) {
+    public void invokeHandler(T listener, Object o) {
         methodInvocations++;
         try {
             method.invokeHandler(listener, o);
@@ -40,7 +39,7 @@ class HandlerMethodInstance<T> implements HandlerMethodInfo {
         }
     }
 
-    public boolean checkClass(@NotNull Class c) {
+    public boolean checkClass(Class c) {
         return method.checkClass(c);
     }
 

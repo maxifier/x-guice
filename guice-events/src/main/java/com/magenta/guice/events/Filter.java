@@ -1,6 +1,5 @@
 package com.magenta.guice.events;
 
-import org.jetbrains.annotations.NotNull;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -20,7 +19,7 @@ public @interface Filter {
 
     class DefaultMatcher implements EventMatcher {
         @Override
-        public boolean matches(@NotNull Object event) {
+        public boolean matches(Object event) {
             return true;
         }
     }

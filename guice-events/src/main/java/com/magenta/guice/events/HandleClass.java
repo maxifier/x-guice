@@ -1,7 +1,5 @@
 package com.magenta.guice.events;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -22,7 +20,7 @@ public @interface HandleClass {
         }
 
         @Override
-        public boolean matches(@NotNull Class event) {
+        public boolean matches(Class event) {
             if (classes.length == 0) {
                 return true;
             }

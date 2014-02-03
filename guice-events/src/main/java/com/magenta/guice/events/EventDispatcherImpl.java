@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import gnu.trove.THashMap;
 import gnu.trove.THashSet;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +75,7 @@ public class EventDispatcherImpl implements EventDispatcher {
 
     @Override
     //NOSONAR
-    public void fireEvent(@NotNull Object event) {
+    public void fireEvent(Object event) {
         boolean handled;
         synchronized (registrationQueue) {
             firingEvents++;
@@ -176,7 +175,7 @@ public class EventDispatcherImpl implements EventDispatcher {
     }
 
     @Override
-    public final <T> void register(@NotNull T o) throws CyclicFilterAnnotationException {
+    public final <T> void register(T o) throws CyclicFilterAnnotationException {
         synchronized (registrationQueue) {
             if (firingEvents == 0) {
                 register0(o);
