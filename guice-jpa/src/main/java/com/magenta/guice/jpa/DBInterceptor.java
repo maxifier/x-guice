@@ -310,7 +310,7 @@ final class DBInterceptor implements MethodInterceptor, TypeListener, Provider<E
         }
         if (!emfsCache.containsKey(binding) && !emfsCache.containsKey(binding.annotationType())) {
             String s;
-            if (binding == DEFAULT) {
+            if (binding.equals(DEFAULT)) {
                 s = "Container contains @DB without binding annotations," +
                         " but no one EntityManagerFactory without binding annotations declared.";
             } else {
