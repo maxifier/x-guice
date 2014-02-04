@@ -218,7 +218,7 @@ final class DBInterceptor implements MethodInterceptor, TypeListener, Provider<E
                 //looks like we have no such EMF, incredible, but error
                 throw new IllegalStateException(
                         String.format("EntityManager context not found for this @DB method annotated with%s",
-                                bindingAnnotation != DEFAULT ? " " + bindingAnnotation : "out annotation"));
+                                !bindingAnnotation.equals(DEFAULT) ? " " + bindingAnnotation : "out annotation"));
             }
         }
         return context;
