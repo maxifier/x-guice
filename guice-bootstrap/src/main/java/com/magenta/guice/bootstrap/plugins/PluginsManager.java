@@ -1,6 +1,7 @@
 package com.magenta.guice.bootstrap.plugins;
 
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.magenta.guice.bootstrap.model.Plugin;
 import com.magenta.guice.bootstrap.model.io.xpp3.XGuicePluginXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -45,15 +46,20 @@ public final class PluginsManager {
     };
 
     public static Injector loadPlugins(Injector injector, File pluginsPath, @Nullable URLClassLoader providedCL) {
-        Collection<ChildModule> modules = loadModules(pluginsPath, providedCL);
-        for (ChildModule module : modules) {
-            module.beforeChildInjectorCreating(injector);
-            injector = injector.createChildInjector(module);
+        Collection<Module> modules = loadModules(pluginsPath, providedCL);
+        for (Module module : modules) {
+            if (module instanceof ChildModule) {
+                ChildModule childModule = (ChildModule) module;
+                childModule.beforeChildInjectorCreating(injector);
+                injector = injector.createChildInjector(childModule);
+            } else {
+                logger.warn("Old plugin! Unable to cast " + module + " to ChildModule");
+            }
         }
         return injector;
     }
 
-    public static Collection<ChildModule> loadModules(File pluginsPath, @Nullable URLClassLoader providedCL) {
+    public static Collection<Module> loadModules(File pluginsPath, @Nullable URLClassLoader providedCL) {
         checkPath(pluginsPath);
         URL[] jars = scanJars(pluginsPath);
         ClassLoader pluginsCL;
@@ -65,18 +71,18 @@ public final class PluginsManager {
             pluginsCL = providedCL;
         }
         Collection<Plugin> plugins = scan(pluginsPath);
-        Collection<ChildModule> modules = new ArrayList<ChildModule>();
+        Collection<Module> modules = new ArrayList<Module>();
         for (Plugin plugin : plugins) {
             String moduleName = plugin.getModule();
             try {
-                modules.add((ChildModule) pluginsCL.loadClass(moduleName).newInstance());
+                modules.add((Module) pluginsCL.loadClass(moduleName).newInstance());
                 logger.info("Plugin {} has been loaded.", plugin.getName());
             } catch (InstantiationException e) {
                 logger.warn("Unable to instantiate module " + moduleName + " of plugin " + plugin.getName(), e);
             } catch (IllegalAccessException e) {
                 logger.warn("Unable to instantiate module " + moduleName + " of plugin " + plugin.getName(), e);
             } catch (ClassCastException e) {
-                logger.warn("Old plugin! Unable to cast " + moduleName + " to new ChildModule " + plugin.getName(), e);
+                logger.warn("Unable to cast " + moduleName + " to com.google.inject.Module " + plugin.getName(), e);
             } catch (ClassNotFoundException e) {
                 logger.warn("Module class " + moduleName + " of plugin " + plugin.getName() + " is not found into classpath.", e);
             }
