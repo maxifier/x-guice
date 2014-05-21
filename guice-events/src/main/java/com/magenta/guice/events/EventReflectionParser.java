@@ -1,6 +1,6 @@
 package com.magenta.guice.events;
 
-import gnu.trove.THashMap;
+import gnu.trove.map.hash.THashMap;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -18,8 +18,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Time: 17:00:25
  */
 class EventReflectionParser {
-    private static final Map<Class<? extends Annotation>, HandlerAnnotation> annotationInfos = new THashMap();
-    private static final Map<Class, ListenerClass> classInfos = new THashMap();
+    private static final Map<Class<? extends Annotation>, HandlerAnnotation> annotationInfos = new THashMap<Class<? extends Annotation>, HandlerAnnotation>();
+    private static final Map<Class, ListenerClass> classInfos = new THashMap<Class, ListenerClass>();
 
     private static final HandlerAnnotation processing = new HandlerAnnotation(null, null, null);
 

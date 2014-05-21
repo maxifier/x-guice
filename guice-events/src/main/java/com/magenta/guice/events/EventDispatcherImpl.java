@@ -2,8 +2,8 @@ package com.magenta.guice.events;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import gnu.trove.THashMap;
-import gnu.trove.THashSet;
+import gnu.trove.map.hash.THashMap;
+import gnu.trove.set.hash.THashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
