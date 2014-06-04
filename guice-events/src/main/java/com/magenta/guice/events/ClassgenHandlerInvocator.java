@@ -1,6 +1,6 @@
 package com.magenta.guice.events;
 
-import gnu.trove.THashMap;
+import gnu.trove.map.hash.THashMap;
 import net.sf.cglib.reflect.FastClass;
 import net.sf.cglib.reflect.FastMethod;
 import org.slf4j.Logger;

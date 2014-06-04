@@ -1,6 +1,6 @@
 package com.magenta.guice.events;
 
-import gnu.trove.THashSet;
+import gnu.trove.set.hash.THashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
