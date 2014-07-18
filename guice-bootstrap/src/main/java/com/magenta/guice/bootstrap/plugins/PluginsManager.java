@@ -133,7 +133,7 @@ public final class PluginsManager {
         for (File jarFile : jarFiles) {
             try {
                 URL url = jarFile.toURI().toURL();
-                ClassLoader jarClassloader = new URLClassLoader(new URL[]{url});
+                ClassLoader jarClassloader = new URLClassLoader(new URL[]{url}, null);
                 InputStream pluginXmlStream = jarClassloader.getResourceAsStream(PLUGIN_INFO_PATH);
                 if (pluginXmlStream != null) {
                     Plugin plugin = reader.read(pluginXmlStream);
