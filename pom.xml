@@ -4,7 +4,7 @@
     <groupId>com.maxifier.guice</groupId>
     <artifactId>x-guice</artifactId>
     <packaging>pom</packaging>
-    <version>4.0-SNAPSHOT</version>
+    <version>4.0-beta4-1</version>
     <name>XGuice</name>
     <description>Maxifier Guice eXtensions</description>
 
@@ -25,7 +25,8 @@
         <url>https://github.com/maxifier/x-guice.git</url>
         <connection>scm:git:git@github.com/maxifier/x-guice.git</connection>
         <developerConnection>scm:git:git@github.com:maxifier/x-guice.git</developerConnection>
-    </scm>
+      <tag>x-guice-4.0-beta4-1</tag>
+  </scm>
 
     <properties>
         <guice.version>4.0-beta4</guice.version>
