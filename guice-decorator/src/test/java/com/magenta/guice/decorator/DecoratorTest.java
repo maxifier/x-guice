@@ -2,17 +2,9 @@ package com.magenta.guice.decorator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.BindingAnnotation;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Module;
-import com.google.inject.Scopes;
-import com.google.inject.Stage;
-import com.google.inject.spi.RecordingBinder;
+import com.google.inject.*;
 import org.junit.Test;
 
 import java.lang.annotation.ElementType;
@@ -75,23 +67,40 @@ public class DecoratorTest {
         assertEquals(testResult, waited);
     }
 
-    @Test(expected = DuplicateMemberException.class)
+    @Test
     public void testEqualBindAndTo() {
-        new Decorator(new RecordingBinder(Stage.TOOL))
-                .bind(HelloService.class)
-                .to(HelloService.class);
-
+        try {
+            Guice.createInjector(Stage.TOOL, new AbstractModule() {
+                @Override
+                protected void configure() {
+                    new Decorator(binder())
+                            .bind(HelloService.class)
+                            .to(HelloService.class);
+                }
+            });
+            fail("CreationException with DuplicateMemberException should be here");
+        } catch (CreationException e) {
+            assertTrue(e.getCause() instanceof DuplicateMemberException);
+        }
     }
 
-    @Test(expected = DuplicateMemberException.class)
+    @Test
     public void testEqualToAndDecorated() {
-        new Decorator(new RecordingBinder(Stage.TOOL))
-                .bind(HelloService.class)
-                .to(HelloRealization.class)
-                .decorate(ServiceDecorator.class)
-                .decorate(HelloRealization.class);
-
-
+        try {
+            Guice.createInjector(Stage.TOOL, new AbstractModule() {
+                @Override
+                protected void configure() {
+                    new Decorator(binder())
+                            .bind(HelloService.class)
+                            .to(HelloRealization.class)
+                            .decorate(ServiceDecorator.class)
+                            .decorate(HelloRealization.class);
+                }
+            });
+            fail("CreationException with DuplicateMemberException should be here");
+        } catch (CreationException e) {
+            assertTrue(e.getCause() instanceof DuplicateMemberException);
+        }
     }
 
     @Test

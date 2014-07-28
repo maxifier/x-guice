@@ -1,7 +1,6 @@
 package com.magenta.guice.property.converter;
 
 import com.google.inject.TypeLiteral;
-import com.google.inject.internal.util.ToStringBuilder;
 import com.google.inject.matcher.AbstractMatcher;
 
 import java.lang.reflect.GenericArrayType;
@@ -36,8 +35,6 @@ public class ArrayMatcher extends AbstractMatcher<TypeLiteral<?>> {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(ArrayMatcher.class).
-                add("arrayClass", arrayClass).
-                toString();
+        return String.format("ArrayMatcher{%s}", arrayClass.getName());
     }
 }

@@ -16,5 +16,5 @@ import java.util.Set;
 public interface PropertiesHandler {
     Set<String> keys();
 
-    <T> T get(String key);
+    Object get(String key);
 }

@@ -2,7 +2,6 @@ package com.magenta.guice.property;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
-import com.google.inject.Provider;
 import com.magenta.guice.property.converter.*;
 
 import java.io.File;
@@ -69,7 +68,7 @@ public class PropertyModule extends AbstractModule {
      * @param binder        - your module binder
      * @param propertiesMap - map of properties
      */
-    public static void bindProperties(Binder binder, final Map<String, ?> propertiesMap) {
+    public static void bindProperties(Binder binder, final Map<String, String> propertiesMap) {
         bindProperties(binder, new MapPropertiesHandler(propertiesMap));
     }
 
@@ -81,11 +80,7 @@ public class PropertyModule extends AbstractModule {
      */
     public static void bindProperties(Binder binder, final PropertiesHandler propertiesHandler) {
         for (final String key : propertiesHandler.keys()) {
-            binder.bindConstant().annotatedWith(new PropertyImpl(key)).to(new Provider<String>() {
-                public String get() {
-                    return propertiesHandler.get(key).toString();
-                }
-            });
+            binder.bindConstant().annotatedWith(new PropertyImpl(key)).to((String) propertiesHandler.get(key));
         }
     }
 
@@ -123,9 +118,9 @@ public class PropertyModule extends AbstractModule {
     }
 
     static class MapPropertiesHandler implements PropertiesHandler {
-        private final Map<String, ?> propertiesMap;
+        private final Map<String, String> propertiesMap;
 
-        public MapPropertiesHandler(Map<String, ?> propertiesMap) {
+        public MapPropertiesHandler(Map<String, String> propertiesMap) {
             this.propertiesMap = propertiesMap;
         }
 
@@ -133,8 +128,8 @@ public class PropertyModule extends AbstractModule {
             return propertiesMap.keySet();
         }
 
-        public <T> T get(String key) {
-            return (T) propertiesMap.get(key);
+        public String get(String key) {
+            return propertiesMap.get(key);
         }
     }
 }
