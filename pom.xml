@@ -23,8 +23,8 @@
 
     <scm>
         <url>https://github.com/maxifier/x-guice.git</url>
-        <connection>scm:git:git://git@github.com/maxifier/x-guice.git</connection>
-        <developerConnection>scm:git:git://@github.com:maxifier/x-guice.git</developerConnection>
+        <connection>scm:git:git@github.com/maxifier/x-guice.git</connection>
+        <developerConnection>scm:git:git@github.com:maxifier/x-guice.git</developerConnection>
     </scm>
 
     <properties>
