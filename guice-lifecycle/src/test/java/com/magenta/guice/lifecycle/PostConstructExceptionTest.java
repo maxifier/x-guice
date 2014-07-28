@@ -3,6 +3,7 @@ package com.magenta.guice.lifecycle;
 import com.google.inject.AbstractModule;
 import com.google.inject.CreationException;
 import com.google.inject.Guice;
+import com.google.inject.ProvisionException;
 import org.junit.Test;
 
 import javax.annotation.PostConstruct;

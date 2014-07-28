@@ -92,7 +92,7 @@ public final class Lifecycle {
                 destroy(((InstanceBinding) binding).getProvider().get(), errors);
             }
             if (binding instanceof ProviderInstanceBinding) {
-                destroy(binding.getProvider(), errors);
+                destroy(((ProviderInstanceBinding) binding).getUserSuppliedProvider(), errors);
             }
 
             //finish Provider and ProviderInstance binding

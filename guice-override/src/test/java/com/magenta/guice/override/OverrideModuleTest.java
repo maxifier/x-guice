@@ -1,13 +1,21 @@
 package com.magenta.guice.override;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import com.google.inject.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.Binder;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.PrivateModule;
+import com.google.inject.Provides;
+import com.google.inject.Scopes;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.junit.Test;
+
+import javax.annotation.Nullable;
+
+import static org.junit.Assert.*;
 
 /*
 * Project: Maxifier
@@ -30,13 +38,26 @@ public class OverrideModuleTest {
         };
 
         Module override = new OverrideModule() {
+
+
+            @Nullable
             @Override
-            protected void configure() {
-                override(I.class).to(NewImpl.class);
+            public Module override() {
+                return new AbstractModule() {
+                    @Override
+                    protected void configure() {
+                        bind(I.class).to(NewImpl.class);
+                    }
+                };
+            }
+
+            @Override
+            public void configure(Binder binder) {
+
             }
         };
 
-        Injector inj = Guice.createInjector(OverrideModule.collect(base, override));
+        Injector inj = Guice.createInjector(GuiceOverrides.collect(base, override));
         I instance = inj.getInstance(I.class);
         assertTrue(instance instanceof NewImpl);
     }
@@ -51,13 +72,25 @@ public class OverrideModuleTest {
         };
 
         Module override = new OverrideModule() {
+
+            @Nullable
             @Override
-            protected void configure() {
-                override(I.class).to(OldImpl.class).in(Scopes.NO_SCOPE);
+            public Module override() {
+                return new AbstractModule() {
+                    @Override
+                    protected void configure() {
+                        bind(I.class).to(OldImpl.class).in(Scopes.NO_SCOPE);
+                    }
+                };
+            }
+
+            @Override
+            public void configure(Binder binder) {
+
             }
         };
 
-        Injector inj = Guice.createInjector(OverrideModule.collect(base, override));
+        Injector inj = Guice.createInjector(GuiceOverrides.collect(base, override));
         I instance1 = inj.getInstance(I.class);
         I instance2 = inj.getInstance(I.class);
         assertTrue(instance1 instanceof OldImpl);
@@ -102,14 +135,27 @@ public class OverrideModuleTest {
                 bindConstant().annotatedWith(Names.named("a")).to("Hello");
             }
         };
+
         Module m2 = new OverrideModule() {
+
+            @Nullable
             @Override
-            protected void configure() {
-                overrideConstant().annotatedWith(Names.named("a")).to("world");
+            public Module override() {
+                return new AbstractModule() {
+                    @Override
+                    protected void configure() {
+                        bindConstant().annotatedWith(Names.named("a")).to("world");
+                    }
+                };
+            }
+
+            @Override
+            public void configure(Binder binder) {
+
             }
         };
 
-        Foo instance = Guice.createInjector(OverrideModule.collect(m1, m2)).getInstance(Foo.class);
+        Foo instance = Guice.createInjector(GuiceOverrides.collect(m1, m2)).getInstance(Foo.class);
         assertEquals(instance.bu, "world");
     }
 
@@ -134,7 +180,7 @@ public class OverrideModuleTest {
             }
         };
 
-        Foo instance = Guice.createInjector(OverrideModule.collect(m)).getInstance(Foo.class);
+        Foo instance = Guice.createInjector(GuiceOverrides.collect(m)).getInstance(Foo.class);
         assertEquals(instance.bu, "Hello world");
     }
 }
