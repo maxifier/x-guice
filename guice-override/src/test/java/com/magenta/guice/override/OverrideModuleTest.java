@@ -1,19 +1,14 @@
 package com.magenta.guice.override;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Binder;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.PrivateModule;
-import com.google.inject.Provides;
-import com.google.inject.Scopes;
+import com.google.inject.*;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import com.google.inject.spi.Message;
+import com.google.inject.util.Modules;
 import org.junit.Test;
 
-import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -29,6 +24,28 @@ import static org.junit.Assert.*;
 
 public class OverrideModuleTest {
     @Test
+    public void testOriginalOverride() throws Exception {
+        Module base = new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(I.class).to(OldImpl.class);
+            }
+        };
+
+        Module override = new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(I.class).to(NewImpl.class);
+            }
+        };
+
+        Injector inj = Guice.createInjector(Modules.override(base).with(override));
+        I instance = inj.getInstance(I.class);
+        assertTrue(instance instanceof NewImpl);
+    }
+
+
+    @Test
     public void testSimpleOverride() throws Exception {
         Module base = new AbstractModule() {
             @Override
@@ -38,29 +55,41 @@ public class OverrideModuleTest {
         };
 
         Module override = new OverrideModule() {
-
-
-            @Nullable
             @Override
-            public Module override() {
-                return new AbstractModule() {
-                    @Override
-                    protected void configure() {
-                        bind(I.class).to(NewImpl.class);
-                    }
-                };
-            }
-
-            @Override
-            public void configure(Binder binder) {
-
+            protected void configure() {
+                override(I.class).to(NewImpl.class);
             }
         };
 
-        Injector inj = Guice.createInjector(GuiceOverrides.collect(base, override));
+        Injector inj = Guice.createInjector(OverrideModule.collect(base, override));
         I instance = inj.getInstance(I.class);
         assertTrue(instance instanceof NewImpl);
     }
+
+
+    @Test
+    public void testErrorOutput() throws Exception {
+        Module base = new OverrideModule() {
+            @Override
+            protected void configure() {
+                bind(I.class).to(OldImpl.class);
+                override(I.class).to(InvalidImpl.class);
+            }
+        };
+
+        Collection<Message> errorMessages = null;
+        try {
+            Injector inj = Guice.createInjector(OverrideModule.collect(base));
+            inj.getInstance(I.class);
+        } catch (CreationException e) {
+            errorMessages = e.getErrorMessages();
+        }
+        assertNotNull(errorMessages);
+        assertEquals(errorMessages.size(), 1);
+        List<Object> sources = errorMessages.iterator().next().getSources();
+        assertEquals(sources.size(), 3);
+    }
+
 
     @Test
     public void testScopeOverride() throws Exception {
@@ -72,25 +101,13 @@ public class OverrideModuleTest {
         };
 
         Module override = new OverrideModule() {
-
-            @Nullable
             @Override
-            public Module override() {
-                return new AbstractModule() {
-                    @Override
-                    protected void configure() {
-                        bind(I.class).to(OldImpl.class).in(Scopes.NO_SCOPE);
-                    }
-                };
-            }
-
-            @Override
-            public void configure(Binder binder) {
-
+            protected void configure() {
+                override(I.class).to(OldImpl.class).in(Scopes.NO_SCOPE);
             }
         };
 
-        Injector inj = Guice.createInjector(GuiceOverrides.collect(base, override));
+        Injector inj = Guice.createInjector(OverrideModule.collect(base, override));
         I instance1 = inj.getInstance(I.class);
         I instance2 = inj.getInstance(I.class);
         assertTrue(instance1 instanceof OldImpl);
@@ -106,6 +123,19 @@ public class OverrideModuleTest {
 
     static class NewImpl implements I {
     }
+
+    static class InvalidImpl implements I {
+        @Inject
+        InvalidImpl(InvalidClass invalidClass) {
+        }
+    }
+
+    static class InvalidClass {
+        @Inject
+        InvalidClass(@Named("a") String b) {
+        }
+    }
+
 
     @Test
     public void testPrivateModulesOverride() {
@@ -135,27 +165,14 @@ public class OverrideModuleTest {
                 bindConstant().annotatedWith(Names.named("a")).to("Hello");
             }
         };
-
         Module m2 = new OverrideModule() {
-
-            @Nullable
             @Override
-            public Module override() {
-                return new AbstractModule() {
-                    @Override
-                    protected void configure() {
-                        bindConstant().annotatedWith(Names.named("a")).to("world");
-                    }
-                };
-            }
-
-            @Override
-            public void configure(Binder binder) {
-
+            protected void configure() {
+                overrideConstant().annotatedWith(Names.named("a")).to("world");
             }
         };
 
-        Foo instance = Guice.createInjector(GuiceOverrides.collect(m1, m2)).getInstance(Foo.class);
+        Foo instance = Guice.createInjector(OverrideModule.collect(m1, m2)).getInstance(Foo.class);
         assertEquals(instance.bu, "world");
     }
 
@@ -180,7 +197,7 @@ public class OverrideModuleTest {
             }
         };
 
-        Foo instance = Guice.createInjector(GuiceOverrides.collect(m)).getInstance(Foo.class);
+        Foo instance = Guice.createInjector(OverrideModule.collect(m)).getInstance(Foo.class);
         assertEquals(instance.bu, "Hello world");
     }
 }
