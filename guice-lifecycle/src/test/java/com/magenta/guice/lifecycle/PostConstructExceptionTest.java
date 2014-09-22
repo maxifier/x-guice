@@ -3,8 +3,7 @@ package com.magenta.guice.lifecycle;
 import com.google.inject.AbstractModule;
 import com.google.inject.CreationException;
 import com.google.inject.Guice;
-import com.google.inject.ProvisionException;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import javax.annotation.PostConstruct;
 
@@ -13,7 +12,7 @@ import javax.annotation.PostConstruct;
  */
 public class PostConstructExceptionTest {
 
-    @Test(expected = CreationException.class)
+    @Test(expectedExceptions = CreationException.class)
     public void testExceptionInPostConstruct() throws Exception {
         Guice.createInjector(new LifecycleModule(), new AbstractModule() {
             @Override

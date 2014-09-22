@@ -5,12 +5,12 @@ import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import com.google.inject.spi.Message;
 import com.google.inject.util.Modules;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import java.util.Collection;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.testng.Assert.*;
 
 /*
 * Project: Maxifier

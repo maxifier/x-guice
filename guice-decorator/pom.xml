@@ -5,7 +5,6 @@
         <version>4.0-beta4-3-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.maxifier.guice</groupId>
     <artifactId>guice-decorator</artifactId>
     <name>XGuice::Decorator</name>
     <description>Guice extension for decorator pattern</description>
