@@ -1,16 +1,9 @@
 package com.magenta.guice.property.converter;
 
-import static org.junit.Assert.assertEquals;
-
-import com.google.inject.Binder;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.TypeLiteral;
+import com.google.inject.*;
 import com.magenta.guice.property.Property;
 import com.magenta.guice.property.PropertyModule;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -19,6 +12,8 @@ import java.net.URL;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.testng.Assert.assertEquals;
 /*
 * Project: Maxifier
 * Author: Aleksey Didik

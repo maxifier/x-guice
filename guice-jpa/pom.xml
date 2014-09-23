@@ -13,7 +13,6 @@
     <description>Extension for work with JPA</description>
 
     <dependencies>
-
         <dependency>
             <groupId>org.hibernate.javax.persistence</groupId>
             <artifactId>hibernate-jpa-2.0-api</artifactId>

@@ -1,18 +1,17 @@
 package com.magenta.guice.property.converter;
 
 
-import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.magenta.guice.property.Property;
 import com.magenta.guice.property.PropertyModule;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import java.util.Properties;
+
+import static org.testng.Assert.assertEquals;
 
 /**
  * Project: Maxifier
@@ -46,16 +45,15 @@ public class ArrayPropertyTest {
         });
 
         Form form = inj.getInstance(Form.class);
-        assertArrayEquals(new String[]{"semen", "dima"}, form.getNames());
-        assertEquals(true, form.getActives()[0]);
-        assertEquals(false, form.getActives()[1]);
-        assertEquals(false, form.getActives()[2]);
-        assertEquals(45.234, form.getSalaries()[0]);
-        assertEquals(12312.2324, form.getSalaries()[1]);
-        assertEquals(23123.433, form.getSalaries()[2]);
-        assertEquals(23, form.getAges()[0]);
-        assertEquals(45, form.getAges()[1]);
-
+        assertEquals(form.getNames(), new String[]{"semen", "dima"});
+        assertEquals(form.getActives()[0], true);
+        assertEquals(form.getActives()[1], false);
+        assertEquals(form.getActives()[2], false);
+        assertEquals(form.getSalaries()[0], 45.234);
+        assertEquals(form.getSalaries()[1], 12312.2324);
+        assertEquals(form.getSalaries()[2], 23123.433);
+        assertEquals(form.getAges()[0], 23);
+        assertEquals(form.getAges()[1], 45);
     }
 
     static class FormImpl implements Form {

@@ -1,21 +1,16 @@
 package com.magenta.guice.lifecycle;
 
-import static junit.framework.Assert.assertEquals;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
+import com.google.inject.*;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Names;
 import com.google.inject.spi.InjectionListener;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.testng.Assert.assertEquals;
 
 /**
  * @author aleksey.didik@maxifier.com (Aleksey Didik)
@@ -83,7 +78,7 @@ public class TrickyJIT {
 
         childInjector.getInstance(Key.get(Foo.class, Names.named("simple")));
 
-        assertEquals(false, listenFlag.get()); //the issue is still here
+        assertEquals(listenFlag.get(), false); //the issue is still here
 
     }
 

@@ -1,17 +1,15 @@
 package com.magenta.guice.events;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.util.concurrent.TimeUnit;
 
-import static junit.framework.Assert.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+import static org.testng.Assert.*;
 
 @SuppressWarnings("unchecked")
 public class ListenerReferenceUTest {
@@ -30,7 +28,7 @@ public class ListenerReferenceUTest {
         assertEquals(ref11, ref12);
         assertEquals(ref11.hashCode(), ref12.hashCode());
 
-        assertThat(ref11.hashCode(), is(not(ref2.hashCode())));
+        assertTrue(is(not(ref2.hashCode())).matches(ref11.hashCode()));
     }
 
     @Test
@@ -41,7 +39,7 @@ public class ListenerReferenceUTest {
         int hashBeforeGC = ref.hashCode();
 
         // actually this check is unnecessary we just want to ensure that object wasn't GCed too early.
-        assertEquals("Hash of reference should match hash of the object", System.identityHashCode(o), hashBeforeGC);
+        assertEquals(hashBeforeGC, System.identityHashCode(o), "Hash of reference should match hash of the object");
         // ensure the object can be GCed.
         //noinspection UnusedAssignment
         o = null;
@@ -53,9 +51,9 @@ public class ListenerReferenceUTest {
         }
         assertSame(ref, r);
 
-        assertNull("Reference should be GCed", ref.get());
+        assertNull(ref.get(), "Reference should be GCed");
         int hashAfterGC = ref.hashCode();
-        assertEquals("Hash of ListenerReference should not change after referenced object was GCed", hashBeforeGC, hashAfterGC);
+        assertEquals(hashAfterGC, hashBeforeGC, "Hash of ListenerReference should not change after referenced object was GCed");
     }
 
     @Test
@@ -66,9 +64,9 @@ public class ListenerReferenceUTest {
         ListenerReference<Object> ref2 = new ListenerReference<Object>(mock(ListenerClassInstance.class), o, referenceQueue);
 
         // actually this check is unnecessary we just want to ensure that object wasn't GCed too early.
-        assertEquals("Hash of reference should match hash of the object", System.identityHashCode(o), ref1.hashCode());
+        assertEquals(ref1.hashCode(), System.identityHashCode(o), "Hash of reference should match hash of the object");
 
-        assertEquals(ref1, ref2);
+        assertEquals(ref2, ref1);
 
         // ensure the object can be GCed.
         //noinspection UnusedAssignment
@@ -79,9 +77,9 @@ public class ListenerReferenceUTest {
         if (r == null) {
             fail("GC should collect reference in 1 min");
         }
-        assertNull("Reference should be GCed", ref1.get());
-        assertNull("Reference should be GCed", ref2.get());
+        assertNull(ref1.get(), "Reference should be GCed");
+        assertNull(ref2.get(), "Reference should be GCed");
 
-        assertTrue("References should become unequal after referenced object was GCed", !ref1.equals(ref2));
+        assertTrue(!ref1.equals(ref2), "References should become unequal after referenced object was GCed");
     }
 }

@@ -1,10 +1,10 @@
 package com.magenta.guice.property.converter;
 
 
-import static org.junit.Assert.assertTrue;
-
 import com.google.inject.TypeLiteral;
-import org.junit.Test;
+import org.testng.annotations.Test;
+
+import static org.testng.Assert.assertTrue;
 
 public class ClazzMatcherTest {
     @Test

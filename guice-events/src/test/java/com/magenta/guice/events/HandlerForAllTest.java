@@ -1,12 +1,12 @@
 package com.magenta.guice.events;
 
 
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import java.util.LinkedList;
+
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 /*
 * Project: Maxifier

@@ -1,20 +1,14 @@
 package com.magenta.guice.events;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-
-import junit.framework.Assert;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.mockito.Mockito.*;
+import static org.testng.Assert.*;
 
 public class EventDispatcherUTest {
 
@@ -54,7 +48,7 @@ public class EventDispatcherUTest {
         verifyNoMoreInteractions(listener);
     }
 
-    @Test(expected = CyclicFilterAnnotationException.class)
+    @Test(expectedExceptions = CyclicFilterAnnotationException.class)
     public void testCyclicAnnotations1() {
         class Test1 {
             @Handler
@@ -67,7 +61,7 @@ public class EventDispatcherUTest {
         d.register(new Test1());
     }
 
-    @Test(expected = CyclicFilterAnnotationException.class)
+    @Test(expectedExceptions = CyclicFilterAnnotationException.class)
     public void testCyclicAnnotations2() {
         class Test2 {
             @Handler
@@ -80,7 +74,7 @@ public class EventDispatcherUTest {
         d.register(new Test2());
     }
 
-    @Test(expected = CyclicFilterAnnotationException.class)
+    @Test(expectedExceptions = CyclicFilterAnnotationException.class)
     public void testAutoAnnotated() {
         class TestAuto {
             @Handler
@@ -93,7 +87,7 @@ public class EventDispatcherUTest {
         d.register(new TestAuto());
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test(expectedExceptions = RuntimeException.class)
     public void testEmptyHandler() {
         class Test1 {
             @Handler
@@ -121,14 +115,14 @@ public class EventDispatcherUTest {
 
             @Override
             protected synchronized void unhandledEvent(Object event) {
-                assertFalse("unhandled event passed twice", b);
-                assertEquals("event", event);
+                assertFalse(b, "unhandled event passed twice");
+                assertEquals(event, "event");
                 b = true;
             }
         }
         TestEventDispatcher d = new TestEventDispatcher();
         d.fireEvent("event");
-        assertTrue("unhandled event wasn't processed", d.b);
+        assertTrue(d.b, "unhandled event wasn't processed");
     }
 
     @Test
@@ -218,7 +212,7 @@ public class EventDispatcherUTest {
     // the time may vary greatly, even in simplest tests.
     //
     // This test is not really deterministic, it is stochastic, but in case of real deadlock it fails from time to time.,
-    @Test(timeout = 60000)
+    @Test(timeOut = 60000)
     public void testDeadlockRegression() {
         final EventDispatcherImpl d = new EventDispatcherImpl(new ListenerRegistrationQueue());
         final Object lock = new Object();
@@ -259,7 +253,7 @@ public class EventDispatcherUTest {
 
         d.fireEvent("test");
 
-        Assert.assertEquals(v.get(), 3);
+        assertEquals(v.get(), 3);
     }
 
     private void sleepABit() {

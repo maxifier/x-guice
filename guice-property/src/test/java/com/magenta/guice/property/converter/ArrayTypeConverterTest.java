@@ -1,14 +1,11 @@
 package com.magenta.guice.property.converter;
 
-import static com.magenta.guice.property.converter.ArrayTypeConverter.BOOLEAN_ARRAY_CONVERTER;
-import static com.magenta.guice.property.converter.ArrayTypeConverter.DOUBLE_ARRAY_CONVERTER;
-import static com.magenta.guice.property.converter.ArrayTypeConverter.INT_ARRAY_CONVERTER;
-import static com.magenta.guice.property.converter.ArrayTypeConverter.STRING_ARRAY_CONVERTER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import com.google.inject.TypeLiteral;
-import org.junit.Test;
+import org.testng.annotations.Test;
+
+import static com.magenta.guice.property.converter.ArrayTypeConverter.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Project: Maxifier

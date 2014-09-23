@@ -4,13 +4,13 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.magenta.guice.bootstrap.plugins.PluginsManager;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import java.io.File;
 import java.net.URLClassLoader;
 import java.util.Collection;
 
-import static junit.framework.Assert.assertEquals;
+import static org.testng.Assert.assertEquals;
 
 /*
 * Project: Maxifier

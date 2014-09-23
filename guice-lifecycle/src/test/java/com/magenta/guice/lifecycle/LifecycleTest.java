@@ -1,22 +1,13 @@
 package com.magenta.guice.lifecycle;
 
-import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Provider;
-import com.google.inject.Scopes;
-import com.google.inject.Singleton;
+import com.google.inject.*;
 import com.google.inject.name.Names;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+
+import static org.testng.Assert.*;
 
 /**
  * Project: Maxifier

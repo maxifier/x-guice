@@ -1,9 +1,10 @@
 package com.maxifier.guice.mbean;
 
 
-import static org.junit.Assert.assertTrue;
+import org.testng.annotations.Test;
 
-import org.junit.Test;
+import static org.testng.Assert.assertTrue;
+
 
 /**
  * Created by: Aleksey Didik
@@ -33,7 +34,7 @@ public class CGLIBMBeanGeneratorTest {
         Foo mbeanPretender = new Foo(false);
         Object mbean = cglibmBeanGenerator.makeMBean(mbeanPretender);
         mbean.getClass().getMethod("hello").invoke(mbean);
-        assertTrue("mbeanPretender method have to be called", mbeanPretender.called);
+        assertTrue(mbeanPretender.called, "mbeanPretender method have to be called");
     }
 
     public static class Foo {

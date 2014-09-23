@@ -1,17 +1,10 @@
 package com.magenta.guice.property.converter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
-import com.google.inject.Binder;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.TypeLiteral;
+import com.google.inject.*;
 import com.magenta.guice.property.Property;
 import com.magenta.guice.property.PropertyModule;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -19,6 +12,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
 
 /*
 * Project: Maxifier
@@ -37,9 +33,9 @@ public class DateTypeConverterTest {
         Date date = (Date) dateTypeConverter.convert("12/11/2009 # dd/MM/yyyy", TypeLiteral.get(Date.class));
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        assertEquals(10, calendar.get(Calendar.MONTH));
-        assertEquals(12, calendar.get(Calendar.DAY_OF_MONTH));
-        assertEquals(2009, calendar.get(Calendar.YEAR));
+        assertEquals(calendar.get(Calendar.MONTH), 10);
+        assertEquals(calendar.get(Calendar.DAY_OF_MONTH), 12);
+        assertEquals(calendar.get(Calendar.YEAR), 2009);
     }
 
     @Test

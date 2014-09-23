@@ -1,28 +1,13 @@
 package com.magenta.guice.jpa;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import com.google.inject.AbstractModule;
-import com.google.inject.BindingAnnotation;
-import com.google.inject.ConfigurationException;
-import com.google.inject.Guice;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.Stage;
+import com.google.inject.*;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import com.google.inject.spi.Message;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.MockitoAnnotations;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -36,6 +21,10 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static org.mockito.Mockito.*;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
+
 /**
  * Project: Maxifier
  * Author: Aleksey Didik
@@ -46,7 +35,6 @@ import java.util.concurrent.TimeUnit;
  * Use is subject to license terms.
  */
 @SuppressWarnings("EntityManagerInspection")
-@RunWith(MockitoJUnitRunner.class)
 public class DBInterceptorTest {
 
     @Mock
@@ -86,8 +74,9 @@ public class DBInterceptorTest {
     private Injector injector;
 
 
-    @Before
+    @BeforeMethod
     public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
         when(defaultEMF.createEntityManager()).thenReturn(defaultEM);
         when(fooEMF.createEntityManager()).thenReturn(fooEM);
         when(otherEMF.createEntityManager()).thenReturn(otherEM);
