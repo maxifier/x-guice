@@ -1,11 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.maxifier.guice</groupId>
     <artifactId>x-guice</artifactId>
     <packaging>pom</packaging>
-    <version>4.0-beta4-3-SNAPSHOT</version>
+    <version>4.0-beta4-3</version>
     <name>XGuice</name>
     <description>Maxifier Guice eXtensions</description>
 
@@ -26,7 +25,7 @@
         <url>https://github.com/maxifier/x-guice.git</url>
         <connection>scm:git:git@github.com/maxifier/x-guice.git</connection>
         <developerConnection>scm:git:git@github.com:maxifier/x-guice.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>x-guice-4.0-beta4-3</tag>
     </scm>
 
     <properties>
