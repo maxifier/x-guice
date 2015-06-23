@@ -45,6 +45,13 @@ public final class PluginsManager {
         }
     };
 
+    /**
+     * Loads plugins from path
+     * @param injector
+     * @param pluginsPath
+     * @param providedCL
+     * @return
+     */
     public static Injector loadPlugins(Injector injector, File pluginsPath, @Nullable URLClassLoader providedCL) {
         Collection<Module> modules = loadModules(pluginsPath, providedCL);
         for (Module module : modules) {
@@ -59,6 +66,12 @@ public final class PluginsManager {
         return injector;
     }
 
+    /**
+     * Loads modules from path
+     * @param pluginsPath
+     * @param providedCL
+     * @return collection of loaded modules
+     */
     public static Collection<Module> loadModules(File pluginsPath, @Nullable URLClassLoader providedCL) {
         checkPath(pluginsPath);
         URL[] jars = scanJars(pluginsPath);
@@ -90,6 +103,59 @@ public final class PluginsManager {
         return modules;
     }
 
+    /**
+     * Loads modules from path by their class names
+     * @param classesPath path to load modules
+     * @param classNames list of class names
+     * @return collection of loaded modules
+     */
+    public static Collection<Module> loadModulesByClassNames(File classesPath, String[] classNames) {
+        checkPath(classesPath);
+        ClassLoader baseCL = PluginsManager.class.getClassLoader();
+        ClassLoader pluginsCL = new URLClassLoader(classPaths(classesPath), baseCL);
+        Collection<Module> modules = new ArrayList<Module>();
+
+        for (String className : classNames) {
+            try {
+                modules.add((Module)pluginsCL.loadClass(className).newInstance());
+                logger.info("Class {} has been loaded.", className);
+            } catch (InstantiationException e) {
+                logger.warn("Unable to instantiate module " + className, e);
+            } catch (IllegalAccessException e) {
+                logger.warn("Unable to instantiate module " + className, e);
+            } catch (ClassCastException e) {
+                logger.warn("Unable to cast " + className + " to com.google.inject.Module", e);
+            } catch (ClassNotFoundException e) {
+                logger.warn("Class " + className + " is not found into " + classesPath + ".", e);
+            }
+        }
+
+        return modules;
+    }
+
+    /**
+     * Converts path to URLs array
+     * @param path
+     * @return array of URLs
+     */
+    private static URL[] classPaths(File path) {
+        URL[] urls;
+
+        try {
+            urls = new URL[]{path.toURI().toURL()};
+        } catch(MalformedURLException e) {
+            throw new RuntimeException("Something wrong in filesystem" +
+                    " if available file path can't converted to URL", e);
+        }
+
+        return urls;
+    }
+
+    /**
+     * Adds JARs to provided class loader
+     * @param providedCL
+     * @param jars
+     */
     private static void addJarsToClassLoader(URLClassLoader providedCL, URL[] jars) {
         Class urlClass = URLClassLoader.class;
         Method method;
@@ -110,6 +176,11 @@ public final class PluginsManager {
         }
     }
 
+    /**
+     * Converts JAR files in path to array of URLs
+     * @param pluginsPath
+     * @return array of URLs
+     */
     private static URL[] scanJars(File pluginsPath) {
         //prepare jars URL
         File[] jarFiles = pluginsPath.listFiles(jarFilter);
@@ -126,6 +197,11 @@ public final class PluginsManager {
         return urls;
     }
 
+    /**
+     * Scans a directory for plugins
+     * @param pluginsPath
+     * @return collection of found plugins
+     */
     static Collection<Plugin> scan(File pluginsPath) {
         File[] jarFiles = pluginsPath.listFiles(jarFilter);
         Collection<Plugin> plugins = new HashSet<Plugin>();
@@ -150,6 +226,10 @@ public final class PluginsManager {
         return plugins;
     }
 
+    /**
+     * Checks if path exists
+     * @param path
+     */
     static void checkPath(File path) {
         if (!path.exists()) {
             throw new IllegalArgumentException(String.format("Path '%s' is not exists", path));
