@@ -16,7 +16,6 @@
         <module>guice-scopes</module>
         <module>guice-bootstrap</module>
         <module>guice-decorator</module>
-        <module>guice-override</module>
         <module>guice-jpa</module>
         <module>guice-jpa-idea-plugin</module>
     </modules>
@@ -29,7 +28,7 @@
     </scm>
 
     <properties>
-        <guice.version>4.0-beta4</guice.version>
+        <guice.version>4.0</guice.version>
     </properties>
 
     <build>
@@ -139,11 +138,6 @@
             <dependency>
                 <groupId>com.maxifier.guice</groupId>
                 <artifactId>guice-decorator</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.maxifier.guice</groupId>
-                <artifactId>guice-override</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

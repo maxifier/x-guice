@@ -45,10 +45,6 @@
             <artifactId>guice-property</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.maxifier.guice</groupId>
-            <artifactId>guice-override</artifactId>
-        </dependency>
-        <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
         </dependency>
