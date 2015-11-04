@@ -10,7 +10,7 @@
     <defaults>
         <default>
             <key>package</key>
-            <value>com.magenta.guice.bootstrap.model</value>
+            <value>com.maxifier.guice.bootstrap.model</value>
         </default>
     </defaults>
 

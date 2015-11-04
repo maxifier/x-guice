@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.HashSet;
 
 @Singleton
-public class MBeanManagerImpl implements MBeanManager, com.magenta.guice.mbean.MBeanManager {
+public class MBeanManagerImpl implements MBeanManager {
     private static Logger logger = LoggerFactory.getLogger(MBeanManagerImpl.class);
 
     private final Collection<ObjectName> mbeans = new HashSet<ObjectName>();
@@ -110,12 +110,6 @@ public class MBeanManagerImpl implements MBeanManager, com.magenta.guice.mbean.M
         MBean mbeanAnnotation = mbeanClass.getAnnotation(MBean.class);
         if (mbeanAnnotation != null) {
             name = mbeanAnnotation.name();
-        } else {
-            //check old name
-            com.magenta.guice.mbean.MBean oldAnnotation = mbeanClass.getAnnotation(com.magenta.guice.mbean.MBean.class);
-            if (oldAnnotation != null) {
-                name = oldAnnotation.name();
-            }
         }
         if (isBlank(name)) {
             name = makeDefaultName(mbeanClass);

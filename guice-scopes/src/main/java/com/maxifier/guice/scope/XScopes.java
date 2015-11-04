@@ -4,9 +4,6 @@ import com.google.inject.Binder;
 import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.Scope;
-import com.magenta.guice.scope.LazySingleton;
-import com.magenta.guice.scope.ThreadLocalScope;
-import com.magenta.guice.scope.UISingleton;
 
 /**
  * Project: Maxifier
@@ -72,8 +69,5 @@ public final class XScopes {
         binder.bindScope(LazySingleton.class, LAZY_SINGLETON);
         binder.bindScope(UISingleton.class, UI_SINGLETON);
         binder.bindScope(ThreadLocalScope.class, THREAD_LOCAL);
-        binder.bindScope(com.maxifier.guice.scope.LazySingleton.class, LAZY_SINGLETON);
-        binder.bindScope(com.maxifier.guice.scope.UISingleton.class, UI_SINGLETON);
-        binder.bindScope(com.maxifier.guice.scope.ThreadLocalScope.class, THREAD_LOCAL);
     }
 }

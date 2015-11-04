@@ -26,7 +26,7 @@ import static com.google.inject.internal.InternalFlags.getIncludeStackTraceOptio
 
 /**
  * Full copy from {@link com.google.inject.spi.Elements.RecordingBinder}
- * for the sake of {@link com.magenta.guice.override.OverrideModule}
+ * for the sake of {@link com.maxifier.guice.override.OverrideModule}
  *
  * @author Igor Yankov (igor.yankov@maxifier.com) (2014-08-21 16:02)
  */

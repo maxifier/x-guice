@@ -27,7 +27,7 @@ public class MBeanManagerTest {
     public void testDefaultName() {
         MBeanManagerImpl test = new MBeanManagerImpl("test", mock(MBeanServer.class), null);
         final Object mbean = new Object();
-        final String expected = String.format("class=java.lang.Object");
+        final String expected = "class=java.lang.Object";
         final String result = test.resolveName(mbean);
         assertEquals(expected, result);
     }
@@ -38,14 +38,6 @@ public class MBeanManagerTest {
         String tested = "mockDomain:service=test";
         String result = test.checkAlreadyDomained(tested);
         assertEquals("service=test", result);
-    }
-
-    @com.magenta.guice.mbean.MBean(name = "service=test")
-    static class OldAnnotated {
-    }
-
-    @com.magenta.guice.mbean.MBean
-    static class OldAnnotatedNotNamed {
     }
 
     @MBean(name = "service=test")
@@ -60,27 +52,17 @@ public class MBeanManagerTest {
     public void testAnnotationName() {
         MBeanManagerImpl test = new MBeanManagerImpl("test", mock(MBeanServer.class), null);
         Object mbean = new Annotated();
-        String expected = String.format("service=test");
+        String expected = "service=test";
         String result = test.resolveName(mbean);
         assertEquals(expected, result);
 
-        mbean = new OldAnnotated();
-        result = test.resolveName(mbean);
-        assertEquals(expected, result);
-
-
         mbean = new AnnotatedNotNamed();
-        expected = String.format("class=com.maxifier.guice.mbean.MBeanManagerTest$AnnotatedNotNamed");
-        result = test.resolveName(mbean);
-        assertEquals(expected, result);
-
-        mbean = new OldAnnotatedNotNamed();
-        expected = String.format("class=com.maxifier.guice.mbean.MBeanManagerTest$OldAnnotatedNotNamed");
+        expected = "class=com.maxifier.guice.mbean.MBeanManagerTest$AnnotatedNotNamed";
         result = test.resolveName(mbean);
         assertEquals(expected, result);
     }
 
-    static interface FooCompliantMBean {
+    interface FooCompliantMBean {
     }
 
     @MBean(name = "service=test")
@@ -106,7 +88,7 @@ public class MBeanManagerTest {
     @Test
     public void testRegisterCompliant() throws Exception {
         MBeanGenerator mBeanGenerator = mock(MBeanGenerator.class);
-        when(mBeanGenerator.makeMBean(Matchers.<Object>any())).thenReturn(new Object());
+        when(mBeanGenerator.makeMBean(Matchers.any())).thenReturn(new Object());
         MBeanManagerImpl test = new MBeanManagerImpl("test", mock(MBeanServer.class), mBeanGenerator);
         test.register(new FooCompliant());
         verifyZeroInteractions(mBeanGenerator);
@@ -115,7 +97,7 @@ public class MBeanManagerTest {
     @Test
     public void testRegisterNotCompliant() throws Exception {
         MBeanGenerator mBeanGenerator = mock(MBeanGenerator.class);
-        when(mBeanGenerator.makeMBean(Matchers.<Object>any())).thenReturn(new Object());
+        when(mBeanGenerator.makeMBean(Matchers.any())).thenReturn(new Object());
         MBeanManagerImpl test = new MBeanManagerImpl("test", mock(MBeanServer.class), mBeanGenerator);
         FooNotCompliant fooNotCompliant = new FooNotCompliant();
         test.register(fooNotCompliant);

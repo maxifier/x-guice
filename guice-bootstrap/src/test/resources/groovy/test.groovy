@@ -1,7 +1,7 @@
 import com.google.inject.Scopes
 import com.google.inject.name.Names
-import com.magenta.guice.override.OverrideModule
-import com.magenta.guice.bootstrap.xml.*
+import com.maxifier.guice.override.OverrideModule
+import com.maxifier.guice.bootstrap.xml.*
 
 install(new FooModule())
 bind(TestInterface).to(First)

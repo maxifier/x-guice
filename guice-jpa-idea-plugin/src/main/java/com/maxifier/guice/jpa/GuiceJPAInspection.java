@@ -28,7 +28,7 @@ public class GuiceJPAInspection implements InspectionToolProvider {
     public static final String FINAL_MODIFIER = "final";
     public static final String STATIC_MODIFIER = "static";
     public static final String INJECT_NAME = "com.google.inject.Inject";
-    public static final String DB_NAME = "com.magenta.guice.jpa.DB";
+    public static final String DB_NAME = "com.maxifier.guice.jpa.DB";
 
 
     @Override

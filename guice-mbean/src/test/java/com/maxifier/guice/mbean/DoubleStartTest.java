@@ -52,7 +52,7 @@ public class DoubleStartTest {
         verify(server).unregisterMBean(any(ObjectName.class));
     }
 
-    @com.magenta.guice.mbean.MBean(name = "service=Foo")
+    @MBean(name = "service=Foo")
     static class Foo implements FooMBean {
     }
 

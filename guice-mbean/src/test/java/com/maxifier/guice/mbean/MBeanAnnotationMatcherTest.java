@@ -11,16 +11,10 @@ public class MBeanAnnotationMatcherTest {
     @Test
     public void testMatches() throws Exception {
         @SuppressWarnings({"unchecked"})
-        AnnotationMatcher matcher = new AnnotationMatcher(MBean.class, com.magenta.guice.mbean.MBean.class);
+        AnnotationMatcher matcher = new AnnotationMatcher(MBean.class);
         assertTrue(matcher.matches(TypeLiteral.get(MBeaned.class)));
-        assertTrue(matcher.matches(TypeLiteral.get(OldMBeaned.class)));
         assertFalse(matcher.matches(TypeLiteral.get(NotMBeaned.class)));
     }
-
-    @com.magenta.guice.mbean.MBean(name = "service=Foo")
-    static class OldMBeaned {
-    }
-
 
     @MBean(name = "service=Foo")
     static class MBeaned {
