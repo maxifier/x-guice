@@ -42,4 +42,13 @@ public class PluginsManagerTest {
         Injector inj = Guice.createInjector(new MainModule());
         PluginsManager.loadPlugins(inj, new File("src/test/jars"), systemClassLoader);
     }
+
+    @Test
+    public void testPluginManagerWithLoadingByClassNames() throws Exception {
+        Collection<Module> modules = PluginsManager.loadModulesByClassNames(
+                new File("target/test-classes/"),
+                new String[]{"com.magenta.guice.plugins.FooModuleImpl"}
+        );
+        assertEquals(modules.size(), 1);
+    }
 }
