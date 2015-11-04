@@ -1,7 +1,6 @@
 package com.maxifier.guice.mbean;
 
 import com.google.inject.Singleton;
-import com.sun.jmx.mbeanserver.Introspector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
