@@ -18,6 +18,7 @@
             <artifactId>hibernate-jpa-2.0-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- TODO: get rid of cglib-->
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
