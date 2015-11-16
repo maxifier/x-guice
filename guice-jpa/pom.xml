@@ -3,7 +3,7 @@
     <parent>
         <artifactId>x-guice</artifactId>
         <groupId>com.maxifier.guice</groupId>
-        <version>4.0-beta5-3-SNAPSHOT</version>
+        <version>5.0.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -18,6 +18,7 @@
             <artifactId>hibernate-jpa-2.0-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- TODO: get rid of cglib-->
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>

@@ -2,55 +2,17 @@
     <parent>
         <artifactId>x-guice</artifactId>
         <groupId>com.maxifier.guice</groupId>
-        <version>4.0-beta5-3-SNAPSHOT</version>
+        <version>5.0.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>guice-bootstrap</artifactId>
     <name>XGuice::Bootstrap</name>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.modello</groupId>
-                <artifactId>modello-maven-plugin</artifactId>
-                <configuration>
-                    <models>
-                        <model>src/main/mdo/plugin.xml</model>
-                        <model>src/main/mdo/bootstrap.xml</model>
-                    </models>
-                    <version>1.0.0</version>
-                    <useJava5>true</useJava5>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>myModel</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>java</goal>
-                            <goal>xpp3-reader</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
         <dependency>
-            <groupId>org.codehaus.plexus</groupId>
-            <artifactId>plexus-utils</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.maxifier.guice</groupId>
-            <artifactId>guice-property</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.maxifier.guice</groupId>
-            <artifactId>guice-override</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib</artifactId>
+            <groupId>com.google.inject.extensions</groupId>
+            <artifactId>guice-multibindings</artifactId>
         </dependency>
     </dependencies>
+
 </project>

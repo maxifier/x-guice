@@ -4,7 +4,7 @@
     <groupId>com.maxifier.guice</groupId>
     <artifactId>x-guice</artifactId>
     <packaging>pom</packaging>
-    <version>4.0-beta5-3-SNAPSHOT</version>
+    <version>5.0.2-SNAPSHOT</version>
     <name>XGuice</name>
     <description>Maxifier Guice eXtensions</description>
 
@@ -16,7 +16,6 @@
         <module>guice-scopes</module>
         <module>guice-bootstrap</module>
         <module>guice-decorator</module>
-        <module>guice-override</module>
         <module>guice-jpa</module>
         <module>guice-jpa-idea-plugin</module>
     </modules>
@@ -29,7 +28,7 @@
     </scm>
 
     <properties>
-        <guice.version>4.0-beta4</guice.version>
+        <guice.version>4.0</guice.version>
     </properties>
 
     <build>
@@ -52,6 +51,15 @@
                     <configuration>
                         <source>1.6</source>
                         <target>1.6</target>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>2.6</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -132,10 +140,19 @@
                 <artifactId>guice-decorator</artifactId>
                 <version>${project.version}</version>
             </dependency>
+
             <dependency>
-                <groupId>com.maxifier.guice</groupId>
-                <artifactId>guice-override</artifactId>
-                <version>${project.version}</version>
+                <groupId>com.google.inject</groupId>
+                <artifactId>guice</artifactId>
+                <version>${guice.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.inject.extensions</groupId>
+                <artifactId>guice-multibindings</artifactId>
+                <version>${guice.version}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>
@@ -175,17 +192,12 @@
             </dependency>
 
             <dependency>
-                <groupId>com.google.code.findbugs</groupId>
-                <artifactId>jsr305</artifactId>
-                <version>1.3.9</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.hibernate.javax.persistence</groupId>
                 <artifactId>hibernate-jpa-2.0-api</artifactId>
                 <version>1.0.1.Final</version>
             </dependency>
 
+            <!-- TODO: get rid of cglib-->
             <dependency>
                 <groupId>cglib</groupId>
                 <artifactId>cglib</artifactId>
@@ -201,8 +213,6 @@
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <version>${guice.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -214,13 +224,13 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.7</version>
+            <version>1.7.12</version>
         </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.1.2</version>
+            <version>1.1.3</version>
             <scope>runtime</scope>
         </dependency>
 
