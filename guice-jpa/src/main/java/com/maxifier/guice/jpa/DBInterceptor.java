@@ -1,342 +1,98 @@
 package com.maxifier.guice.jpa;
 
-import static com.maxifier.guice.jpa.DB.Transaction.NOT_REQUIRED;
-
-import com.google.inject.Binding;
-import com.google.inject.BindingAnnotation;
-import com.google.inject.Inject;
-import com.google.inject.Injector;
-import com.google.inject.Key;
-import com.google.inject.Provider;
-import com.google.inject.TypeLiteral;
-import com.google.inject.name.Named;
-import com.google.inject.name.Names;
-import com.google.inject.spi.TypeEncounter;
-import com.google.inject.spi.TypeListener;
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.MethodProxy;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import java.lang.annotation.Annotation;
+import javax.persistence.PersistenceException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.WeakHashMap;
+import java.sql.SQLTransientException;
+import java.util.Random;
+
+import static com.maxifier.guice.jpa.DB.Transaction.NOT_REQUIRED;
+import static com.maxifier.guice.jpa.DB.Transaction.REQUIRES_NEW;
 
 /**
- * Project: Maxifier
- * Author: Aleksey Didik
- * Created: 24.05.2010
- * <p/>
- * Copyright (c) 1999-2010 Magenta Corporation Ltd. All Rights Reserved.
- * Magenta Technology proprietary and confidential.
- * Use is subject to license terms.
+ * Intercepts methods marked by {@link DB @DB} and initialize database-enabled context.
+ * <p>Database context held by {@link UnitOfWork} in thread local variable.</p>
+ * <p>Use {@link DBEntityManagerProvider} to obtain context-sensitive {@code EntityManager} instances.</p>
+ *
+ * @author Konstantin Lyamshin (2015-11-15 23:25)
  */
-final class DBInterceptor implements MethodInterceptor, TypeListener, Provider<EntityManager> {
-
-    /**
-     * Annotation for default @DB usage.
-     * Unique name to be not overridden.
-     */
-    private final static Named DEFAULT = Names.named(UUID.randomUUID().toString());
-
-    /**
-     * EntityManagers contexts of current thread.
-     * One context per one binding annotation.
-     */
-    private final Map<Object, ThreadLocal<EntityManager>> contexts = new HashMap<Object, ThreadLocal<EntityManager>>();
-
-    /**
-     * Last used context of this thread is here
-     */
-    private final ThreadLocal<EntityManager> currentContext = new ThreadLocal<EntityManager>();
-
-    /**
-     * Cache for EMFs
-     */
-    private final Map<Object, EntityManagerFactory> emfsCache = new HashMap<Object, EntityManagerFactory>();
-
-    /**
-     * Method cache for annotations.
-     * Annotation[] array: [0] - @DB, [1] - binding Annotation.
-     */
-    private final Map<Method, Annotation[]> methodsCache = new WeakHashMap<Method, Annotation[]>();
-
-    /**
-     * List of used with annotations needed to be checked.
-     */
-    private final List<Annotation[]> awaiting = new LinkedList<Annotation[]>();
-
-    /**
-     * Does this interceptor prepared to work?
-     */
-    private volatile boolean prepared = false;
-
-    /**
-     * This is delegate proxy for {@link EntityManager} calls.
-     */
-    @SuppressWarnings("EntityManagerInspection")
-    private EntityManager wrapper;
-
-    @Inject
-    synchronized void prepare(Injector injector) {
-        //find all EMFs
-        List<Binding<EntityManagerFactory>> bindingsByType
-                = injector.findBindingsByType(TypeLiteral.get(EntityManagerFactory.class));
-        //prepare emfs cache and contexts
-        for (Binding<EntityManagerFactory> binding : bindingsByType) {
-            Key<EntityManagerFactory> key = binding.getKey();
-            if (key.getAnnotation() != null) {
-                emfsCache.put(key.getAnnotation(), binding.getProvider().get());
-                contexts.put(key.getAnnotation(), new ThreadLocal<EntityManager>());
-            } else if (key.getAnnotationType() != null) {
-                emfsCache.put(key.getAnnotationType(), binding.getProvider().get());
-                contexts.put(key.getAnnotationType(), new ThreadLocal<EntityManager>());
-            } else {
-                //default binding
-                emfsCache.put(DEFAULT, binding.getProvider().get());
-                contexts.put(DEFAULT, new ThreadLocal<EntityManager>());
-            }
-        }
-        //create wrapper
-        Enhancer enhancer = new Enhancer();
-        enhancer.setInterfaces(new Class[]{EntityManager.class});
-        enhancer.setCallback(new net.sf.cglib.proxy.MethodInterceptor() {
-            @Override
-            public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-                if (method.getName().equals("close")) {
-                    //do nothing
-                    return null;
-                } else {
-                    return proxy.invoke(current(), args);
-                }
-
-            }
-        });
-        wrapper = (EntityManager) enhancer.create();
-        prepared = true;
-    }
-
+public class DBInterceptor implements MethodInterceptor {
+    private static final Logger logger = LoggerFactory.getLogger(DBInterceptor.class);
+    private static final Random RND = new Random();
+    private static final int RETRY_TIMEOUTS[] = new int[]{
+        0, 307, 2000, 11000, 19000, 31000, 53000, 89000, 151000, 241000, 307000
+    };
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
-        //check is prepared?
-        if (!prepared) {
-            throw new IllegalStateException("DBInterceptor is not ready but called from method");
-        }
-        //get method info
+        // I don't care bridge methods so much because nested invocations cost almost nothing.
+        // Significant resources spend on DB connect only, but in case of bridge methods connection
+        // obtained only in the most deep invocation. In this case outer invocation became
+        // connection and/or transaction owner and closes it properly.
+        // In case of REQUIRES_NEW nested invocations create extra UnitOfWork, but
+        // connection obtained only in the most deep one and almost no extra resources wasted.
         Method method = invocation.getMethod();
-        Annotation[] annotations = getAnnotations(method);
-        DB dbAnnotation = (DB) annotations[0];
-        Annotation bindingAnnotation = annotations[1];
-        DB.Transaction transactionType = dbAnnotation.transaction();
-
-        boolean owner = false;
-
-        ThreadLocal<EntityManager> context = get(bindingAnnotation);
-        EntityManager entityManager = context.get();
-        if (entityManager == null) {
-            EntityManagerFactory factory = getEntityManagerFactory(bindingAnnotation);
-            entityManager = factory.createEntityManager();
-            context.set(entityManager);
-            owner = true;
+        DB config = method.getAnnotation(DB.class);
+        if (config == null) {
+            throw new IllegalStateException("@DB annotation not found on " + method);
         }
-        //set current EM for this thread and save previous one
-        EntityManager previousContext = currentContext.get();
-        currentContext.set(entityManager);
 
-        try {
-            EntityTransaction transaction = entityManager.getTransaction();
-            boolean alreadyInTransaction = transaction.isActive();
-            //already have transaction
-            if (alreadyInTransaction) {
-                Object result;
-                try {
-                    result = invocation.proceed();
-                } catch (Throwable e) {
-                    transaction.setRollbackOnly();
-                    throw e;
-                }
-                return result;
-            }
-            //transaction not needed
-            if (transactionType == NOT_REQUIRED) {
-                return invocation.proceed();
-            }
-            //need transaction
-            transaction.begin();
-            Object result;
+        // method retry processing
+        int retries = 0;
+        while (true) {
             try {
-                result = invocation.proceed();
-            } catch (Throwable e) {
-                transaction.rollback();
-                throw e;
-            }
-            transaction.commit();
-            return result;
-        } finally {
-            //restore previous used context
-            currentContext.set(previousContext);
-            //make owner responsibilities
-            if (owner) {
-                entityManager.close();
-                context.remove();
-            }
-        }
-    }
-
-
-    EntityManagerFactory getEntityManagerFactory(Annotation bindingAnnotation) {
-        //may be cached?
-        EntityManagerFactory factory = emfsCache.get(bindingAnnotation);
-        if (factory == null) {
-            //may be we have to look by class?
-            factory = emfsCache.get(bindingAnnotation.annotationType());
-            if (factory == null) {
-                //looks like we have no such EMF, incredible, but error
-                throw new IllegalStateException(
-                        String.format("EntityManagerFactory not found for this @DB method annotated with%s",
-                                bindingAnnotation != DEFAULT ? " " + bindingAnnotation : "out annotation"));
-            }
-        }
-        return factory;
-    }
-
-    ThreadLocal<EntityManager> get(Annotation bindingAnnotation) {
-        //get cached context
-        ThreadLocal<EntityManager> context = contexts.get(bindingAnnotation);
-        if (context == null) {
-            context = contexts.get(bindingAnnotation.annotationType());
-            if (context == null) {
-                //looks like we have no such EMF, incredible, but error
-                throw new IllegalStateException(
-                        String.format("EntityManager context not found for this @DB method annotated with%s",
-                                !bindingAnnotation.equals(DEFAULT) ? " " + bindingAnnotation : "out annotation"));
-            }
-        }
-        return context;
-    }
-
-    @Deprecated
-    EntityManager _getEntityManager() {
-        ThreadLocal<EntityManager> context = contexts.get(DEFAULT);
-        EntityManager entityManager = context.get();
-        if (entityManager == null) {
-            EntityManagerFactory factory = getEntityManagerFactory(DEFAULT);
-            entityManager = factory.createEntityManager();
-            context.set(entityManager);
-        }
-        return entityManager;
-    }
-
-    @Deprecated
-    void _removeEntityManager() {
-        contexts.get(DEFAULT).remove();
-    }
-
-    Annotation[] getAnnotations(Method method) {
-        Annotation[] annotations = methodsCache.get(method);
-        if (annotations == null) {
-            DB db = method.getAnnotation(DB.class);
-            if (db == null) {
-                throw new IllegalStateException("It's illegal state, this method must not be intercepted." +
-                        " Use necessary matcher for DBInterceptor");
-            }
-            Annotation bindingAnnotation = getBindingAnnotation(method);
-            annotations = new Annotation[]{db, bindingAnnotation};
-            methodsCache.put(method, annotations);
-
-        }
-        return annotations;
-    }
-
-    Annotation getBindingAnnotation(Method method) {
-        Annotation[] annotations = method.getAnnotations();
-        Annotation found = null;
-        for (Annotation annotation : annotations) {
-            if (annotation.annotationType().isAnnotationPresent(BindingAnnotation.class)) {
-                if (found == null) {
-                    found = annotation;
-                } else {
-                    throw new IllegalStateException(String.format("At least two binding annotations used with @DB method." +
-                            " Should be one only. Annotations: %s, %s", annotation.toString(), found.toString()));
-                }
-            }
-        }
-        return found != null ? found : DEFAULT;
-    }
-
-
-    @Override
-    public synchronized <I> void hear(TypeLiteral<I> type, TypeEncounter<I> encounter) {
-        Class<? super I> rawType = type.getRawType();
-        while (rawType != Object.class) {
-            for (Method method : rawType.getDeclaredMethods()) {
-                if (method.isAnnotationPresent(DB.class)) {
-                    try {
-                        Annotation[] annotations = getAnnotations(method);
-                        if (!prepared) {
-                            awaiting.add(annotations);
-                        } else {
-                            checkAndCache(annotations, method);
-                            if (!awaiting.isEmpty()) {
-                                for (Annotation[] v : awaiting) {
-                                    checkAndCache(v, method);
-                                }
-                                awaiting.clear();
-                            }
-                        }
-                    } catch (Exception e) {
-                        encounter.addError(e);
+                return invoke0(config.transaction(), invocation);
+            } catch (PersistenceException e) {
+                if (e.getCause() instanceof SQLTransientException && retries++ < config.retries()) {
+                    logger.error("Exception while @DB method processing retry #" + retries, e);
+                    if (delayRetry(retries)) {
+                        continue;
                     }
                 }
+                throw e;
             }
-            //noinspection unchecked
-            rawType = rawType.getSuperclass();
         }
     }
 
-    private void checkAndCache(Annotation[] annotations, Method method) {
-        Annotation binding = annotations[1];
-        if (binding == null) {
-            binding = DEFAULT;
+    private static boolean delayRetry(int n) {
+        int maxN = RETRY_TIMEOUTS.length - 1;
+        int timeout = n < maxN ? RETRY_TIMEOUTS[n] : RETRY_TIMEOUTS[maxN - 1] + RND.nextInt(RETRY_TIMEOUTS[maxN]);
+        try {
+            Thread.sleep(timeout);
+        } catch (InterruptedException ignored) {
+            Thread.currentThread().interrupt();
+            return false;
         }
-        if (!emfsCache.containsKey(binding) && !emfsCache.containsKey(binding.annotationType())) {
-            String s;
-            if (binding.equals(DEFAULT)) {
-                s = "Container contains @DB without binding annotations," +
-                        " but no one EntityManagerFactory without binding annotations declared.";
-            } else {
-                s = String.format("Container contains @DB method annotated with %s," +
-                        " but no one EntityManagerFactory declared  with this annotations", binding);
+        return true;
+    }
+
+    private Object invoke0(DB.Transaction transaction, MethodInvocation invocation) throws Throwable {
+        UnitOfWork context = UnitOfWork.get();
+
+        boolean connectionOwner = transaction == REQUIRES_NEW || context == null;
+        if (connectionOwner) {
+            context = new UnitOfWork();
+        }
+        try {
+            boolean transactionOwner = transaction != NOT_REQUIRED && context.startTransaction();
+            try {
+                return invocation.proceed();
+            } catch (Exception e) {
+                context.setRollbackOnly();
+                throw e;
+            } finally {
+                if (transactionOwner) {
+                    context.endTransaction();
+                }
             }
-            throw new IllegalStateException(s);
-        } else {
-            methodsCache.put(method, annotations);
+        } finally {
+            if (connectionOwner) {
+                context.releaseConnection();
+            }
         }
-    }
-
-    public EntityManager current() {
-        EntityManager entityManager = currentContext.get();
-        if (entityManager == null) {
-            throw new IllegalStateException("EntityManager called in the method not annotated with @DB.");
-        }
-        return entityManager;
-    }
-
-    @Override
-    public EntityManager get() {
-        //check is prepared?
-        if (!prepared) {
-            throw new IllegalStateException("DBInterceptor is not ready but called from method");
-        }
-        return wrapper;
     }
 }
