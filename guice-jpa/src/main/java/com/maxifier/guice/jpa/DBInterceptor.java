@@ -48,8 +48,8 @@ public class DBInterceptor implements MethodInterceptor {
                 return invoke0(config.transaction(), invocation);
             } catch (PersistenceException e) {
                 if (e.getCause() instanceof SQLTransientException && retries++ < config.retries()) {
-                    logger.error("Exception while @DB method processing retry #" + retries, e);
                     if (delayRetry(retries)) {
+                        logger.info(String.format("Retry #%d of %s", retries, method), e);
                         continue;
                     }
                 }
