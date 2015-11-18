@@ -36,7 +36,7 @@ public @interface DB {
     /**
      * Automatically retries marked method in case of {@link java.sql.SQLTransientException}.
      * <p>Use with extreme caution. Method retry may cause side effects with unpredictable results.</p>
-     * <p>This functionality designed to cope with db deadlocks which unavoidable in production environments.
+     * <p>This functionality designed to cope with db deadlocks which are unavoidable in production environments.
      * This attribute provides only basic functionality. For more advanced cases handle database context manually.</p>
      * <p>Each next method call retry processed after some timeout. Retry stops by thread interruption.
      * Timeouts declared in {@link DBInterceptor#RETRY_TIMEOUTS}.</p>
