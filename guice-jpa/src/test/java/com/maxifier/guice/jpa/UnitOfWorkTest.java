@@ -56,14 +56,14 @@ public class UnitOfWorkTest extends org.testng.Assert {
     @Test
     public void testConnect() throws Exception {
         // non-transactional
-        UnitOfWork context1 = new UnitOfWork();
+        UnitOfWork context1 = UnitOfWork.create();
         assertSame(context1.getConnection(emf), em);
         verify(emf, times(1)).createEntityManager();
         verify(em, never()).getTransaction();
         assertSame(UnitOfWork.get(), context1);
 
         // transactional
-        UnitOfWork context2 = new UnitOfWork();
+        UnitOfWork context2 = UnitOfWork.create();
         context2.startTransaction();
         assertSame(context2.getConnection(emf), em);
         verify(emf, times(2)).createEntityManager();
@@ -90,7 +90,7 @@ public class UnitOfWorkTest extends org.testng.Assert {
 
     @Test(expectedExceptions = IllegalStateException.class)
     public void testMismatchEMF() throws Exception {
-        UnitOfWork context = new UnitOfWork();
+        UnitOfWork context = UnitOfWork.create();
         context.getConnection(emf);
         context.getConnection(mock(EntityManagerFactory.class));
     }
@@ -98,7 +98,7 @@ public class UnitOfWorkTest extends org.testng.Assert {
     @Test
     public void testExceptionalRelease1() throws Exception {
         // non-transactional
-        UnitOfWork context = new UnitOfWork();
+        UnitOfWork context = UnitOfWork.create();
         context.getConnection(emf);
         assertSame(UnitOfWork.get(), context);
 
@@ -112,7 +112,7 @@ public class UnitOfWorkTest extends org.testng.Assert {
     @Test
     public void testExceptionalRelease2() throws Exception {
         // transactional
-        UnitOfWork context = new UnitOfWork();
+        UnitOfWork context = UnitOfWork.create();
         context.startTransaction();
         context.getConnection(emf);
         assertSame(UnitOfWork.get(), context);
@@ -127,7 +127,7 @@ public class UnitOfWorkTest extends org.testng.Assert {
 
     @Test
     public void testTransactionNoConnection() throws Exception {
-        UnitOfWork context = new UnitOfWork();
+        UnitOfWork context = UnitOfWork.create();
         assertEquals(context.toString(), "UnitOfWork{}");
         assertEquals(context.startTransaction(), true);
         assertEquals(context.startTransaction(), false);
@@ -138,7 +138,7 @@ public class UnitOfWorkTest extends org.testng.Assert {
 
     @Test
     public void testTransactionBeforeConnection() throws Exception {
-        UnitOfWork context = new UnitOfWork();
+        UnitOfWork context = UnitOfWork.create();
         assertEquals(context.toString(), "UnitOfWork{}");
         assertEquals(context.startTransaction(), true);
         assertEquals(context.toString(), "UnitOfWork{transactional}");
@@ -154,7 +154,7 @@ public class UnitOfWorkTest extends org.testng.Assert {
 
     @Test
     public void testTransactionLater() throws Exception {
-        UnitOfWork context = new UnitOfWork();
+        UnitOfWork context = UnitOfWork.create();
         context.getConnection(emf);
         verify(tr, never()).begin();
         assertEquals(context.toString(), "UnitOfWork{connected}");
@@ -171,7 +171,7 @@ public class UnitOfWorkTest extends org.testng.Assert {
 
     @Test
     public void testRollback() throws Exception {
-        UnitOfWork context = new UnitOfWork();
+        UnitOfWork context = UnitOfWork.create();
         context.startTransaction();
         context.getConnection(emf);
 
@@ -190,7 +190,7 @@ public class UnitOfWorkTest extends org.testng.Assert {
 
     @Test
     public void testSetRollbackOnly() throws Exception {
-        UnitOfWork context = new UnitOfWork();
+        UnitOfWork context = UnitOfWork.create();
         context.setRollbackOnly(); // nop, no connection
 
         context.getConnection(emf);

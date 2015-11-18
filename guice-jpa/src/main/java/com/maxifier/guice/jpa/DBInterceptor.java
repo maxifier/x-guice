@@ -75,7 +75,7 @@ public class DBInterceptor implements MethodInterceptor {
 
         boolean connectionOwner = transaction == REQUIRES_NEW || context == null;
         if (connectionOwner) {
-            context = new UnitOfWork();
+            context = UnitOfWork.create();
         }
         try {
             boolean transactionOwner = transaction != NOT_REQUIRED && context.startTransaction();

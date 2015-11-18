@@ -4,6 +4,7 @@ import com.maxifier.guice.jpa.DB.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -47,7 +48,7 @@ public final class UnitOfWork {
      * like in {@link Transaction#NOT_REQUIRED} mode. All transactions should be handled manually.</p>
      */
     public static void begin() {
-        new UnitOfWork();
+        create();
     }
 
     /**
@@ -68,9 +69,15 @@ public final class UnitOfWork {
         return current.get();
     }
 
-    UnitOfWork() {
-        this.previous = current.get();
-        current.set(this);
+    @Nonnull
+    static UnitOfWork create() {
+        UnitOfWork context = new UnitOfWork(current.get());
+        current.set(context);
+        return context;
+    }
+
+    private UnitOfWork(UnitOfWork previous) {
+        this.previous = previous;
     }
 
     boolean startTransaction() {
