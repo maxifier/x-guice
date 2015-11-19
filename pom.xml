@@ -147,18 +147,11 @@
                 <version>${guice.version}</version>
                 <scope>provided</scope>
             </dependency>
-
             <dependency>
                 <groupId>com.google.inject.extensions</groupId>
                 <artifactId>guice-multibindings</artifactId>
                 <version>${guice.version}</version>
                 <scope>provided</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.codehaus.plexus</groupId>
-                <artifactId>plexus-utils</artifactId>
-                <version>2.0.1</version>
             </dependency>
 
             <dependency>
@@ -195,13 +188,6 @@
                 <groupId>org.hibernate.javax.persistence</groupId>
                 <artifactId>hibernate-jpa-2.0-api</artifactId>
                 <version>1.0.1.Final</version>
-            </dependency>
-
-            <!-- TODO: get rid of cglib-->
-            <dependency>
-                <groupId>cglib</groupId>
-                <artifactId>cglib</artifactId>
-                <version>2.2</version>
             </dependency>
 
         </dependencies>
