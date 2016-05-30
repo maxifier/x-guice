@@ -105,19 +105,18 @@ public class PropertyModule extends AbstractModule {
     private static Properties loadPropertiesFromResources(Module module, String resourceName) {
         InputStream resourceAsStream = module.getClass().getClassLoader().getResourceAsStream(resourceName);
         if (resourceAsStream == null) {
-            throw new IllegalStateException("Property file for " + module.getClass() + " is not found:" + resourceName);
+            throw new IllegalArgumentException("Property file for " + module.getClass() + " is not found:" + resourceName);
         }
 
-        final Properties properties = new Properties();
+        Properties properties = new Properties();
         try {
-            properties.load(resourceAsStream);
+            try {
+                properties.load(resourceAsStream);
+            } finally {
+                resourceAsStream.close();
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } finally {
-            try {
-                resourceAsStream.close();
-            } catch (IOException e1) {
-            }
         }
         return properties;
     }
