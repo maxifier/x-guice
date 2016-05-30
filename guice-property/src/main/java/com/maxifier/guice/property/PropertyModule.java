@@ -2,9 +2,13 @@ package com.maxifier.guice.property;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Binder;
+import com.google.inject.Module;
 import com.maxifier.guice.property.converter.*;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.text.DateFormat;
@@ -19,7 +23,7 @@ import static com.maxifier.guice.property.converter.ArrayTypeConverter.*;
  * Project: Maxifier
  * Date: 10.09.2009
  * Time: 15:20:38
- * <p/>
+ * <p>
  * Copyright (c) 1999-2009 Magenta Corporation Ltd. All Rights Reserved.
  * Magenta Technology proprietary and confidential.
  * Use is subject to license terms.
@@ -91,6 +95,30 @@ public class PropertyModule extends AbstractModule {
      */
     public static void bindSystemProperties(Binder binder) {
         bindProperties(binder, System.getProperties());
+    }
+
+    public static void bindPropertiesFromResources(Module module, Binder binder, String resourceName) {
+        final Properties properties = loadPropertiesFromResources(module, resourceName);
+        bindProperties(binder, properties);
+    }
+
+    private static Properties loadPropertiesFromResources(Module module, String resourceName) {
+        InputStream resourceAsStream = module.getClass().getClassLoader().getResourceAsStream(resourceName);
+        if (resourceAsStream == null) {
+            throw new IllegalArgumentException("Property file for " + module.getClass() + " is not found:" + resourceName);
+        }
+
+        Properties properties = new Properties();
+        try {
+            try {
+                properties.load(resourceAsStream);
+            } finally {
+                resourceAsStream.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return properties;
     }
 
     //deprecated, leaved for compatibility reason
