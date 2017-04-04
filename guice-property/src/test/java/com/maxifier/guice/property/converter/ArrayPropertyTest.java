@@ -11,21 +11,10 @@ import org.testng.annotations.Test;
 
 import java.util.Properties;
 
-import static org.testng.Assert.assertEquals;
-
 /**
- * Project: Maxifier
- * Date: 10.09.2009
- * Time: 15:29:42
- * <p/>
- * Copyright (c) 1999-2009 Magenta Corporation Ltd. All Rights Reserved.
- * Magenta Technology proprietary and confidential.
- * Use is subject to license terms.
- *
- * @author Aleksey Didik
+ * @author Aleksey Didik (10.09.2009 15:29:42)
  */
-@SuppressWarnings({"ALL"})
-public class ArrayPropertyTest {
+public class ArrayPropertyTest extends org.testng.Assert {
 
     @Test
     public void testArrayProperty() {
@@ -35,12 +24,11 @@ public class ArrayPropertyTest {
         properties.put("salaries", "45.234,12312.2324;23123.433");
         properties.put("ages", "23;45");
 
-        PropertyModule module = new PropertyModule(properties);
+        PropertyModule module = PropertyModule.loadFrom(properties).withConverters();
         Injector inj = Guice.createInjector(module, new AbstractModule() {
             @Override
             protected void configure() {
                 bind(Form.class).to(FormImpl.class);
-                PropertyModule.bindTypes(binder());
             }
         });
 

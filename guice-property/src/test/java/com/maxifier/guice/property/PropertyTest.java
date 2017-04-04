@@ -1,34 +1,24 @@
 package com.maxifier.guice.property;
 
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 /**
- * Project: Maxifier
- * Date: 10.09.2009
- * Time: 15:30:04
- * <p/>
- * Copyright (c) 1999-2009 Magenta Corporation Ltd. All Rights Reserved.
- * Magenta Technology proprietary and confidential.
- * Use is subject to license terms.
- *
- * @author Aleksey Didik
+ * @author Aleksey Didik (10.09.2009 15:30:04)
  */
 public class PropertyTest {
 
     @Test
     public void testProperty() {
-        final Map<String, String> registry = new HashMap<String, String>();
+        final Properties registry = new Properties();
         registry.put("name", "Zebra");
         registry.put("age", "4");
         registry.put("wild", "true");
@@ -38,7 +28,7 @@ public class PropertyTest {
         Injector inj = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
-                PropertyModule.bindProperties(binder(), registry);
+                install(PropertyModule.loadFrom(registry));
                 bind(Animal.class).to(AnimalImpl.class);
             }
         });
@@ -68,8 +58,8 @@ public class PropertyTest {
 
         @Inject
         public AnimalImpl(
-                @Property("name") String name,
-                @Property("age") int age) {
+            @Property("name") String name,
+            @Property("age") int age) {
             this.name = name;
             this.age = age;
         }
@@ -104,7 +94,7 @@ public class PropertyTest {
         }
     }
 
-    static interface Animal {
+    interface Animal {
 
         String getName();
 

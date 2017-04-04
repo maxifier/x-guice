@@ -18,11 +18,25 @@ public class EventDispatcherUTest {
         void test(String s);
     }
 
+    static class ListenerWrapper implements Listener {
+        final Listener tracker;
+
+        ListenerWrapper(Listener tracker) {
+            this.tracker = tracker;
+        }
+
+        @Override
+        public void test(String s) {
+            tracker.test(s);
+        }
+    }
+
     @Test
     public void testMethodParam() {
         EventDispatcher dispatcher = new EventDispatcherImpl(mock(ListenerRegistrationQueue.class));
         Listener listener = mock(Listener.class);
-        dispatcher.register(listener);
+        ListenerWrapper wrapper = new ListenerWrapper(listener);
+        dispatcher.register(wrapper);
         dispatcher.fireEvent("123");
 
         verify(listener).test("123");
@@ -31,10 +45,11 @@ public class EventDispatcherUTest {
 
     @Test
     public void testClassFilters() {
-        AnimalListener listener = mock(AnimalListener.class);
         EventDispatcher dispatcher = new EventDispatcherImpl(mock(ListenerRegistrationQueue.class));
 
-        dispatcher.register(listener);
+        AnimalListener listener = mock(AnimalListener.class);
+        AnimalListenerWrapper wrapper = new AnimalListenerWrapper(listener);
+        dispatcher.register(wrapper);
 
         for (Animal animal : Animal.values()) {
             dispatcher.fireEvent(animal);
@@ -160,6 +175,7 @@ public class EventDispatcherUTest {
         final EventDispatcher d = new EventDispatcherImpl(mock(ListenerRegistrationQueue.class));
 
         final Listener l = mock(Listener.class);
+        final ListenerWrapper wrapper = new ListenerWrapper(l);
 
         class TestListener {
             int x = 0;
@@ -169,7 +185,7 @@ public class EventDispatcherUTest {
                 if (s.equals("123")) {
                     assertEquals(x, 0);
                     x++;
-                    d.register(l);
+                    d.register(wrapper);
                     d.fireEvent("321");
                 } else if (s.equals("321")) {
                     assertEquals(x, 1);
