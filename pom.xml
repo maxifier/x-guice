@@ -28,7 +28,7 @@
     </scm>
 
     <properties>
-        <guice.version>4.0</guice.version>
+        <guice.version>4.1.0</guice.version>
     </properties>
 
     <build>
