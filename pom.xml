@@ -103,6 +103,14 @@
         </plugins>
     </build>
 
+    <repositories>
+        <repository>
+            <!-- This repository holds IntelliJ artifacts for guice-jpa-idea-plugin module -->
+            <id>maxifier-thirdparty</id>
+            <url>https://nexus.maxifier.com/content/repositories/thirdparty</url>
+        </repository>
+    </repositories>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -242,7 +250,6 @@
 
     </dependencies>
 
-
     <distributionManagement>
         <repository>
             <id>maxifier</id>
@@ -253,6 +260,5 @@
             <url>https://nexus.maxifier.com/content/repositories/snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
-
 
 </project>
