@@ -1,26 +1,20 @@
 package com.maxifier.guice.property.converter;
 
-import com.google.inject.*;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.TypeLiteral;
 import com.maxifier.guice.property.Property;
 import com.maxifier.guice.property.PropertyModule;
 import org.testng.annotations.Test;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 
 import static org.testng.Assert.assertEquals;
 
 /**
- * Project: Maxifier
- * Date: 28.10.2009
- * Time: 19:28:24
- * <p/>
- * Copyright (c) 1999-2009 Magenta Corporation Ltd. All Rights Reserved.
- * Magenta Technology proprietary and confidential.
- * Use is subject to license terms.
- *
- * @author Aleksey Didik
+ * @author Aleksey Didik (28.10.2009 19:28:24)
  */
 public class FileTypeConverterTest {
     private static final String FILE_NAME = "foo.txt";
@@ -37,14 +31,9 @@ public class FileTypeConverterTest {
 
     @Test
     public void testInContainer() {
-        Map<String, String> props = new HashMap<String, String>();
+        Properties props = new Properties();
         props.put("file.name", FULL_NAME);
-        Injector inj = Guice.createInjector(new PropertyModule(props), new Module() {
-            @Override
-            public void configure(Binder binder) {
-                PropertyModule.bindTypes(binder);
-            }
-        });
+        Injector inj = Guice.createInjector(PropertyModule.loadFrom(props).withConverters());
         Foo foo = inj.getInstance(Foo.class);
         File fooFile = foo.file;
         assertEquals(fooFile.getName(), FILE_NAME);

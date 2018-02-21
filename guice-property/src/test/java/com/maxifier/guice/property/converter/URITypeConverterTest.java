@@ -8,20 +8,13 @@ import org.testng.annotations.Test;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 
 import static org.testng.Assert.assertEquals;
-/*
-* Project: Maxifier
-* Author: Aleksey Didik
-* Created: 23.05.2008 10:19:35
-* 
-* Copyright (c) 1999-2009 Magenta Corporation Ltd. All Rights Reserved.
-* Magenta Technology proprietary and confidential.
-* Use is subject to license terms.
-*/
 
+/**
+ * @author Aleksey Didik (23.05.2008 10:19:35)
+ */
 public class URITypeConverterTest {
     @Test
     public void testConvert() throws Exception {
@@ -35,14 +28,9 @@ public class URITypeConverterTest {
 
     @Test
     public void testInContainer() throws ParseException, URISyntaxException {
-        Map<String, String> props = new HashMap<String, String>();
+        Properties props = new Properties();
         props.put("uri", "file://C:/test.txt");
-        Injector inj = Guice.createInjector(new PropertyModule(props), new Module() {
-            @Override
-            public void configure(Binder binder) {
-                PropertyModule.bindTypes(binder);
-            }
-        });
+        Injector inj = Guice.createInjector(PropertyModule.loadFrom(props).withConverters());
         Foo foo = inj.getInstance(Foo.class);
         URI uri = foo.uri;
         assertEquals(uri, new URI("file://C:/test.txt"));

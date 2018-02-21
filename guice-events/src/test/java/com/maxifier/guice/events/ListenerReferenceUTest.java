@@ -6,8 +6,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.mockito.Mockito.mock;
 import static org.testng.Assert.*;
 
@@ -28,7 +26,7 @@ public class ListenerReferenceUTest {
         assertEquals(ref11, ref12);
         assertEquals(ref11.hashCode(), ref12.hashCode());
 
-        assertTrue(is(not(ref2.hashCode())).matches(ref11.hashCode()));
+        assertNotEquals(ref2.hashCode(), ref11.hashCode());
     }
 
     @Test

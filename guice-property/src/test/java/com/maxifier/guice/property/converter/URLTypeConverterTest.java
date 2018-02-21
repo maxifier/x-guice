@@ -10,20 +10,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Properties;
 
 import static org.testng.Assert.assertEquals;
-/*
-* Project: Maxifier
-* Author: Aleksey Didik
-* Created: 23.05.2008 10:19:35
-* 
-* Copyright (c) 1999-2009 Magenta Corporation Ltd. All Rights Reserved.
-* Magenta Technology proprietary and confidential.
-* Use is subject to license terms.
-*/
 
+/**
+ * @author Aleksey Didik (23.05.2008 10:19:35)
+ */
 public class URLTypeConverterTest {
     @Test
     public void testConvert() throws Exception {
@@ -36,14 +29,9 @@ public class URLTypeConverterTest {
 
     @Test
     public void testInContainer() throws ParseException, URISyntaxException, MalformedURLException {
-        Map<String, String> props = new HashMap<String, String>();
+        Properties props = new Properties();
         props.put("url", "http://maxifier.com/index.html");
-        Injector inj = Guice.createInjector(new PropertyModule(props), new Module() {
-            @Override
-            public void configure(Binder binder) {
-                PropertyModule.bindTypes(binder);
-            }
-        });
+        Injector inj = Guice.createInjector(PropertyModule.loadFrom(props).withConverters());
         Foo foo = inj.getInstance(Foo.class);
         URL url = foo.url;
         assertEquals(url, new URL("http://maxifier.com/index.html"));

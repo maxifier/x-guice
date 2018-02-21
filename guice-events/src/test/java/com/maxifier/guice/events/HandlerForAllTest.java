@@ -5,7 +5,7 @@ import org.testng.annotations.Test;
 
 import java.util.LinkedList;
 
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 /*
@@ -21,9 +21,10 @@ public class HandlerForAllTest {
 
     @Test
     public void testHandleAll() {
-        All spy = spy(new All());
+        AllWrapper wrapper = new AllWrapper();
+        All spy = wrapper.spy;
         EventDispatcher ed = new EventDispatcherImpl(new ListenerRegistrationQueue());
-        ed.register(spy);
+        ed.register(wrapper);
         ed.fireEvent(Animal.CROCODILE);
         ed.fireEvent("");
         ed.fireEvent(4);
@@ -35,9 +36,16 @@ public class HandlerForAllTest {
         verify(spy).hurrai(linkedList);
     }
 
-    public static class All {
+    interface All {
+        void hurrai(Object object);
+    }
+
+    static class AllWrapper implements All {
+        final All spy = mock(All.class);
+
         @Handler
         public void hurrai(Object object) {
+            spy.hurrai(object);
         }
     }
 }

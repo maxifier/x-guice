@@ -8,24 +8,14 @@ import org.testng.annotations.Test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
 /*
-* Project: Maxifier
-* Author: Aleksey Didik
-* Created: 23.05.2008 10:19:35
-* 
-* Copyright (c) 1999-2009 Magenta Corporation Ltd. All Rights Reserved.
-* Magenta Technology proprietary and confidential.
-* Use is subject to license terms.
+* @author Aleksey Didik (23.05.2008 10:19:35)
 */
-
 public class DateTypeConverterTest {
     @Test
     public void testConvert() throws Exception {
@@ -51,14 +41,9 @@ public class DateTypeConverterTest {
 
     @Test
     public void testInContainer() throws ParseException {
-        Map<String, String> props = new HashMap<String, String>();
+        Properties props = new Properties();
         props.put("date", "12/11/2009 # dd/MM/yyyy");
-        Injector inj = Guice.createInjector(new PropertyModule(props), new Module() {
-            @Override
-            public void configure(Binder binder) {
-                PropertyModule.bindTypes(binder);
-            }
-        });
+        Injector inj = Guice.createInjector(PropertyModule.loadFrom(props).withConverters());
         Foo foo = inj.getInstance(Foo.class);
         Date date = foo.date;
         assertEquals(date, new SimpleDateFormat("dd/MM/yyyy").parse("12/11/2009"));

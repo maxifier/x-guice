@@ -20,6 +20,20 @@ public class HandlerInjectionUTest {
         String whoAreYou();
     }
 
+    static class SomeServiceImpl implements SomeService {
+        final SomeService tracker = mock(SomeService.class);
+
+        @Override
+        public void handle(String s) {
+            tracker.handle(s);
+        }
+
+        @Override
+        public String whoAreYou() {
+            return tracker.whoAreYou();
+        }
+    }
+
     @Singleton
     static class MyEventDispatcher extends EventDispatcherImpl {
         @Inject
@@ -36,14 +50,14 @@ public class HandlerInjectionUTest {
             protected void configure() {
                 install(new EventDispatcherModule());
                 bind(EventDispatcher.class).to(MyEventDispatcher.class);
-                SomeService service = mock(SomeService.class);
+                SomeServiceImpl service = new SomeServiceImpl();
                 bind(SomeService.class).toInstance(service);
 
-                when(service.whoAreYou()).thenReturn("I am service");
+                when(service.tracker.whoAreYou()).thenReturn("I am service");
             }
         });
 
-        SomeService someService = inj.getInstance(SomeService.class);
+        SomeService someService = ((SomeServiceImpl) inj.getInstance(SomeService.class)).tracker;
         EventDispatcher eventDispatcher = inj.getInstance(EventDispatcher.class);
 
         eventDispatcher.fireEvent("test");
@@ -60,11 +74,11 @@ public class HandlerInjectionUTest {
             protected void configure() {
                 install(new EventDispatcherModule());
                 bind(EventDispatcher.class).to(EventDispatcherImpl.class);
-                bind(AnimalListener.class).toInstance(mock(AnimalListener.class));
+                bind(AnimalListener.class).toInstance(new AnimalListenerWrapper());
             }
         });
 
-        AnimalListener animalListener = inj.getInstance(AnimalListener.class);
+        AnimalListener animalListener = ((AnimalListenerWrapper) inj.getInstance(AnimalListener.class)).tracker;
         EventDispatcher eventDispatcher = inj.getInstance(EventDispatcher.class);
 
         eventDispatcher.fireEvent(Animal.CAT);
