@@ -15,10 +15,7 @@ import javax.inject.Inject;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * @author Konstantin Lyamshin (2015-12-30 1:11)
@@ -100,6 +97,19 @@ public class PropertyModuleTest extends org.testng.Assert {
 
         ImmutableList<PropertyDefinition> properties = module.getProperties();
         assertPropertiesList(properties, "aaa", "bbb", "ccc");
+    }
+
+    @Test
+    public void testLoadFromMap() throws Exception {
+        HashMap<String, String> props = new HashMap<String, String>();
+        props.put("ddd", "d");
+        props.put("eee", "e");
+        props.put("fff", "f");
+
+        PropertyModule module = PropertyModule.loadFrom(props);
+
+        ImmutableList<PropertyDefinition> properties = module.getProperties();
+        assertPropertiesList(properties, "ddd", "eee", "fff");
     }
 
     @Test

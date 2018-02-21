@@ -118,6 +118,20 @@ public class CascadeRegistry implements Registry {
     }
 
     /**
+     * Apply overridden properties to provided module.
+     * <p>All bindings of properties in provided module will be replaced with overridden values bindings.</p>
+     */
+    @Nonnull
+    public Module applyOverrides(Iterable<? extends Module> modules) {
+        ElementVisitor<Element> transformer = overrideTransformer();
+        ArrayList<Element> elements = new ArrayList<Element>();
+        for (Element element : Elements.getElements(modules)) {
+            elements.add(element.acceptVisitor(transformer));
+        }
+        return Elements.getModule(elements);
+    }
+
+    /**
      * @return {@code ElementVisitor} which replaces property bindings with overridden property values
      */
     @Nonnull
@@ -166,10 +180,18 @@ public class CascadeRegistry implements Registry {
         private Interpolator interpolator = NOP_INTERPOLATOR;
         private Persister persister = NOP_PERSISTER;
 
+        /**
+         * Reads default property values from Guice {@code Module}.
+         * <p>Properties should be installed using {@link PropertyModule}.</p>
+         */
         public Builder withDefaults(Module module) {
             return withDefaults(Elements.getElements(module));
         }
 
+        /**
+         * Reads default property values from set of Guice bindings.
+         * <p>Properties should be installed using {@link PropertyModule}.</p>
+         */
         public Builder withDefaults(List<Element> module) {
             ElementVisitor<PropertyModule> visitor = new DefaultElementVisitor<PropertyModule>() {
                 @Override
@@ -199,6 +221,10 @@ public class CascadeRegistry implements Registry {
             return this;
         }
 
+        /**
+         * Use provided {@link Properties} as default properties.
+         * <p>Result properties won't have any annotations.</p>
+         */
         public Builder withDefaults(Properties defaults) {
             ImmutableSet.Builder<PropertyDefinition> values = ImmutableSet.builder();
             for (String key : defaults.stringPropertyNames()) {
@@ -211,6 +237,10 @@ public class CascadeRegistry implements Registry {
             return this;
         }
 
+        /**
+         * Use provided {@link Map} as default properties.
+         * <p>Result properties won't have any annotations.</p>
+         */
         public Builder withDefaults(Map<String, String> defaults) {
             ImmutableSet.Builder<PropertyDefinition> values = ImmutableSet.builder();
             for (Map.Entry<String, String> entry : defaults.entrySet()) {
@@ -223,11 +253,17 @@ public class CascadeRegistry implements Registry {
             return this;
         }
 
+        /**
+         * Use provided set of {@link PropertyDefinition}s as default properties.
+         */
         public Builder withDefaults(Set<PropertyDefinition> defaults) {
             this.defaults = ImmutableSet.copyOf(defaults);
             return this;
         }
 
+        /**
+         * Use provided {@link Properties} as overrides.
+         */
         public Builder withOverrides(Properties overrides) {
             ImmutableMap.Builder<String, String> values = ImmutableMap.builder();
             for (String key : overrides.stringPropertyNames()) {
@@ -237,48 +273,77 @@ public class CascadeRegistry implements Registry {
             return this;
         }
 
+        /**
+         * Use provided {@link Map} as overrides.
+         */
         public Builder withOverrides(Map<String, String> overrides) {
             this.overrides = checkNotNull(overrides);
             return this;
         }
 
+        /**
+         * Use custom {@link Overrider}.
+         */
         public Builder withOverrider(Overrider overrider) {
             this.overrider = checkNotNull(overrider);
             return this;
         }
 
+        /**
+         * Use {@link Overrider} which overrides values by System properties.
+         */
         public Builder withSystemProperties() {
             this.overrider = overrider == ENV_OVERRIDER || overrider == SYSENV_OVERRIDER
                 ? SYSENV_OVERRIDER: SYS_OVERRIDER;
             return this;
         }
 
+        /**
+         * Use {@link Overrider} which overrides values by process environment.
+         */
         public Builder withEnvironmentProperties() {
             this.overrider = overrider == SYS_OVERRIDER || overrider == SYSENV_OVERRIDER
                 ? SYSENV_OVERRIDER: ENV_OVERRIDER;
             return this;
         }
 
+        /**
+         * Use property value interpolation while resolving properties.
+         */
         public Builder withInterpolation() {
             this.interpolator = new DefaultInterpolator();
             return this;
         }
 
+        /**
+         * Use property value interpolation while resolving properties.
+         * <p>Limit iterpolation by only properties which have {@code marker} annotaion.</p>
+         * <p>If marker starts from '!' then inverts selection.</p>
+         */
         public Builder withInterpolation(String marker) {
             this.interpolator = new SelectiveInterpolator(marker, defaults);
             return this;
         }
 
+        /**
+         * Use custom {@link Interpolator} to resolve property values.
+         */
         public Builder withInterpolation(Interpolator interpolator) {
             this.interpolator = checkNotNull(interpolator);
             return this;
         }
 
+        /**
+         * Use custom {@link Persister} to save property changes.
+         */
         public Builder withPersister(Persister persister) {
             this.persister = checkNotNull(persister);
             return this;
         }
 
+        /**
+         * Build {@link CascadeRegistry}.
+         */
         public CascadeRegistry build() {
             ImmutableMap.Builder<String, PropertyDefinition> defaults = ImmutableMap.builder();
             HashMap<String, String> values = new HashMap<String, String>(this.defaults.size());
@@ -419,20 +484,20 @@ public class CascadeRegistry implements Registry {
                 int lastPosition = 0;
                 do {
                     result.append(value, lastPosition, m.start());
-                    doInterpolation(result, m, registry, MAX_NESTING);
+                    doInterpolation(key, result, m, registry, MAX_NESTING);
                     lastPosition = m.end();
                 } while (m.find());
                 result.append(value, lastPosition, value.length());
                 return result.toString();
             } catch (IllegalArgumentException e) {
                 if (missed.add(key)) { // avoid log flood
-                    logger.error(e.getMessage() + " for string " + value);
+                    logger.error("{} for string '{}' while resolving '{}'", e.getMessage(), value, key);
                 }
                 return value;
             }
         }
 
-        void doInterpolation(StringBuilder result, Matcher matcher, Map<String, String> registry, int nesting) {
+        void doInterpolation(String key, StringBuilder result, Matcher matcher, Map<String, String> registry, int nesting) {
             if (nesting == 0) {
                 throw new IllegalArgumentException("Maximum property nesting exceeded");
             }
@@ -443,12 +508,12 @@ public class CascadeRegistry implements Registry {
                 int lastPosition = 0;
                 for (Matcher m = PARAM_PATTERN.matcher(value); m.find(); lastPosition = m.end()) {
                     result.append(value, lastPosition, m.start());
-                    doInterpolation(result, m, registry, nesting - 1);
+                    doInterpolation(property, result, m, registry, nesting - 1);
                 }
                 result.append(value, lastPosition, value.length());
             } else {
                 if (missed.add(property)) { // avoid log flood
-                    logger.warn("Property {} for not found in registry", property);
+                    logger.warn("Property '{}' for not found in registry while resolving '{}'", property, key);
                 }
                 result.append(matcher.group());
             }
@@ -463,10 +528,20 @@ public class CascadeRegistry implements Registry {
     public static class SelectiveInterpolator extends DefaultInterpolator {
         private final ImmutableSet<String> marked;
         private final String marker;
+        private final boolean exclude;
 
         public SelectiveInterpolator(String marker, ImmutableSet<PropertyDefinition> defaults) {
             checkArgument(!Strings.isNullOrEmpty(marker), "Empty marker value not allowed");
+            checkArgument(!marker.equals("!"), "No marker provided for exclusion");
             checkArgument(!defaults.isEmpty(), "Default properties values seems to be not loaded yet");
+
+            this.exclude = marker.startsWith("!");
+            this.marker = marker;
+
+            if (exclude) {
+                marker = marker.substring(1);
+            }
+
             ImmutableSet.Builder<String> marked = ImmutableSet.builder();
             for (PropertyDefinition definition : defaults) {
                 String annotation = PropertyModule.getPropertyAnnotation(definition, marker);
@@ -474,34 +549,33 @@ public class CascadeRegistry implements Registry {
                     marked.add(definition.getName());
                 }
             }
-            this.marked = marked.build();
-            this.marker = marker;
 
+            this.marked = marked.build();
             if (this.marked.isEmpty()) {
-                logger.warn(String.format("No properties marked with %s found, no interpolation will occured", marker));
+                logger.warn("No properties marked with {} found, all interpolation is {}", this.marker, this.exclude? "on": "off");
             }
         }
 
         @Nonnull
         @Override
         public String interpolate(String key, String value, Map<String, String> registry) {
-            if (!marked.contains(key)) {
+            if (marked.contains(key) == exclude) {
                 return value;
             }
             return super.interpolate(key, value, registry);
         }
 
         @Override
-        void doInterpolation(StringBuilder result, Matcher matcher, Map<String, String> registry, int nesting) {
+        void doInterpolation(String key, StringBuilder result, Matcher matcher, Map<String, String> registry, int nesting) {
             String property = matcher.group(1);
-            if (!marked.contains(property)) {
+            if (marked.contains(property) == exclude) {
                 String value = registry.get(property);
                 if (value != null) {
                     result.append(value);
                     return;
                 }
             }
-            super.doInterpolation(result, matcher, registry, nesting);
+            super.doInterpolation(key, result, matcher, registry, nesting);
         }
 
         @Override

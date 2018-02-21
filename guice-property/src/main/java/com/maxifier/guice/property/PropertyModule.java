@@ -94,7 +94,7 @@ public class PropertyModule implements Module {
     /**
      * Read properties from classpath resource by name
      */
-    public static PropertyModule loadFrom(String resourceName) throws IOException {
+    public static PropertyModule loadFrom(String resourceName) {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         if (classLoader == null) {
             classLoader = PropertyModule.class.getClassLoader();
@@ -157,6 +157,17 @@ public class PropertyModule implements Module {
         ImmutableSet.Builder<PropertyDefinition> definitions = ImmutableSet.builder();
         for (String key : properties.stringPropertyNames()) {
             definitions.add(new PropertyDefinition(key, properties.getProperty(key), ""));
+        }
+        return new PropertyModule(definitions.build(), "");
+    }
+
+    /**
+     * Use custom properties
+     */
+    public static PropertyModule loadFrom(Map<String, String> properties) {
+        ImmutableSet.Builder<PropertyDefinition> definitions = ImmutableSet.builder();
+        for (String key : properties.keySet()) {
+            definitions.add(new PropertyDefinition(key, properties.get(key), ""));
         }
         return new PropertyModule(definitions.build(), "");
     }

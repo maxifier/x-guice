@@ -3,6 +3,7 @@
  */
 package com.maxifier.guice.property;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.AbstractModule;
@@ -264,7 +265,7 @@ public class CascadeRegistryTest extends org.testng.Assert {
     }
 
     @Test
-    public void testInterpolationMarker() throws Exception {
+    public void testInterpolationMarker_Positive() throws Exception {
         CascadeRegistry registry = new CascadeRegistry.Builder()
             .withDefaults(ImmutableSet.of(
                 new PropertyDefinition("p1", "v1", "@interpolate"),
@@ -283,6 +284,29 @@ public class CascadeRegistryTest extends org.testng.Assert {
         assertEquals(registry.get("p1"), "val1='val2='val3='${p4}''','val3='${p4}''");
         assertEquals(registry.get("p2"), "val2='val3='${p4}''");
         assertEquals(registry.get("p3"), "val3='${p4}'");
+        assertEquals(registry.get("p4"), "v4");
+    }
+
+    @Test
+    public void testInterpolationMarker_Negative() throws Exception {
+        CascadeRegistry registry = new CascadeRegistry.Builder()
+            .withDefaults(ImmutableSet.of(
+                new PropertyDefinition("p1", "v1", "@dont-interpolate"),
+                new PropertyDefinition("p2", "v2", "@dont-interpolate"),
+                new PropertyDefinition("p3", "v3", ""),
+                new PropertyDefinition("p4", "v4", "")
+            ))
+            .withOverrides(ImmutableMap.of(
+                "p1", "val1='${p2}','${p3}'",
+                "p2", "val2='${p3}'",
+                "p3", "val3='${p4}','${p2}'"
+            ))
+            .withInterpolation("!@dont-interpolate")
+            .build();
+
+        assertEquals(registry.get("p1"), "val1='${p2}','${p3}'");
+        assertEquals(registry.get("p2"), "val2='${p3}'");
+        assertEquals(registry.get("p3"), "val3='v4','val2='${p3}''");
         assertEquals(registry.get("p4"), "v4");
     }
 
@@ -388,13 +412,28 @@ public class CascadeRegistryTest extends org.testng.Assert {
     }
 
     @Test
-    public void testProcessOverridesWithModule() throws Exception {
+    public void testProcessOverridesWithModule_Array() throws Exception {
         CascadeRegistry registry = new CascadeRegistry.Builder()
             .withDefaults(ImmutableMap.of("p1", "v1", "p2", "1", "p3", "1.0"))
             .withOverrides(ImmutableMap.of("p1", "xxx", "p2", "2", "p3", "3.0"))
             .build();
 
         Injector injector = Guice.createInjector(registry.applyOverrides(new TestModule()));
+
+        TestClass instance = injector.getInstance(TestClass.class);
+        assertEquals(instance.p1, "xxx");
+        assertEquals(instance.p2, 2);
+        assertEquals(instance.p3, 3.0);
+    }
+
+    @Test
+    public void testProcessOverridesWithModule_List() throws Exception {
+        CascadeRegistry registry = new CascadeRegistry.Builder()
+            .withDefaults(ImmutableMap.of("p1", "v1", "p2", "1", "p3", "1.0"))
+            .withOverrides(ImmutableMap.of("p1", "xxx", "p2", "2", "p3", "3.0"))
+            .build();
+
+        Injector injector = Guice.createInjector(registry.applyOverrides(ImmutableList.of(new TestModule())));
 
         TestClass instance = injector.getInstance(TestClass.class);
         assertEquals(instance.p1, "xxx");
