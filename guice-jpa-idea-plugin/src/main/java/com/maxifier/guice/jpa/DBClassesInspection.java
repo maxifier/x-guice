@@ -10,10 +10,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
-import org.jetbrains.annotations.Nls;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +31,7 @@ import static com.maxifier.guice.jpa.GuiceJPAInspection.*;
  */
 public class DBClassesInspection extends AbstractDBInspection {
 
-    @NotNull
+    @Nonnull
     @Override
     public String getID() {
         return "DBClassesInspection";
@@ -43,21 +42,19 @@ public class DBClassesInspection extends AbstractDBInspection {
         return "DBClassesInspection";
     }
 
-    @Nls
-    @NotNull
+    @Nonnull
     @Override
     public String getGroupDisplayName() {
         return INSPECTIONS_GROUP_NAME;
     }
 
-    @Nls
-    @NotNull
+    @Nonnull
     @Override
     public String getDisplayName() {
         return "Classes with methods annotated with @DB";
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public String getShortName() {
         return "db-classes-modifiers";
@@ -68,14 +65,14 @@ public class DBClassesInspection extends AbstractDBInspection {
         return true;
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public HighlightDisplayLevel getDefaultLevel() {
         return HighlightDisplayLevel.ERROR;
     }
 
     @Override
-    public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
+    public ProblemDescriptor[] checkFile(@Nonnull PsiFile file, @Nonnull InspectionManager manager, boolean isOnTheFly) {
         List<ProblemDescriptor> problemDescriptors = new ArrayList<ProblemDescriptor>();
         PsiElement[] classes = PsiTreeUtil.collectElements(file, new AnnotatedPsiMethodFilter(DB_NAME));
         for (PsiElement psiClass : classes) {
@@ -132,13 +129,13 @@ public class DBClassesInspection extends AbstractDBInspection {
             this.psiClass = psiClass;
         }
 
-        @NotNull
+        @Nonnull
         @Override
         public String getName() {
             return "Delete @DB annotation from methods";
         }
 
-        @NotNull
+        @Nonnull
         @Override
         public String getFamilyName() {
             return "@DB fix actions";

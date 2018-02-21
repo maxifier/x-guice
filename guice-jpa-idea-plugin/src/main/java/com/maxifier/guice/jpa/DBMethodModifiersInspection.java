@@ -7,8 +7,8 @@ import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +28,7 @@ import static com.maxifier.guice.jpa.GuiceJPAInspection.*;
 public class DBMethodModifiersInspection extends AbstractDBInspection {
 
 
-    @NotNull
+    @Nonnull
     @Override
     public String getID() {
         return "DBMethodModifiersInspection";
@@ -39,19 +39,19 @@ public class DBMethodModifiersInspection extends AbstractDBInspection {
         return "DBMethodModifiersInspection";
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public String getGroupDisplayName() {
         return INSPECTIONS_GROUP_NAME;
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public String getDisplayName() {
         return "@DB annotated methods modifiers";
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public String getShortName() {
         return "db-methods-modifiers";
@@ -62,15 +62,15 @@ public class DBMethodModifiersInspection extends AbstractDBInspection {
         return true;
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public HighlightDisplayLevel getDefaultLevel() {
         return HighlightDisplayLevel.ERROR;
     }
 
     @Override
-    public ProblemDescriptor[] checkFile(@NotNull PsiFile psiFile,
-                                         @NotNull InspectionManager inspectionManager,
+    public ProblemDescriptor[] checkFile(@Nonnull PsiFile psiFile,
+                                         @Nonnull InspectionManager inspectionManager,
                                          boolean b) {
         List<ProblemDescriptor> problemDescriptors = new ArrayList<ProblemDescriptor>();
         PsiElement[] methods = PsiTreeUtil.collectElements(psiFile, new PsiElementFilter() {
