@@ -6,8 +6,9 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiUtil;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Created by: Aleksey Didik
@@ -52,13 +53,13 @@ public class GuiceJPAInspection implements InspectionToolProvider {
             this.modifier = modifier;
         }
 
-        @NotNull
+        @Nonnull
         @Override
         public String getName() {
             return "Delete disallowed modifier";
         }
 
-        @NotNull
+        @Nonnull
         @Override
         public String getFamilyName() {
             return "@DB fix actions";
@@ -80,13 +81,13 @@ public class GuiceJPAInspection implements InspectionToolProvider {
             this.modifier = modifier;
         }
 
-        @NotNull
+        @Nonnull
         @Override
         public String getName() {
             return "Add required modifier";
         }
 
-        @NotNull
+        @Nonnull
         @Override
         public String getFamilyName() {
             return "@DB fix actions";

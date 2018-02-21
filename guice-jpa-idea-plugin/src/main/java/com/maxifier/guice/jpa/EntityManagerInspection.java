@@ -7,10 +7,9 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
-import org.jetbrains.annotations.Nls;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +34,7 @@ public class EntityManagerInspection extends AbstractDBInspection {
     private static final String DB_FIX_ACTIONS_FAMILY = "@DB fix actions";
 
 
-    @NotNull
+    @Nonnull
     @Override
     public String getID() {
         return "EntityManagerInspection";
@@ -46,21 +45,19 @@ public class EntityManagerInspection extends AbstractDBInspection {
         return "EntityManagerInspection";
     }
 
-    @Nls
-    @NotNull
+    @Nonnull
     @Override
     public String getGroupDisplayName() {
         return INSPECTIONS_GROUP_NAME;
     }
 
-    @Nls
-    @NotNull
+    @Nonnull
     @Override
     public String getDisplayName() {
         return "EntityManager usage";
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public String getShortName() {
         return "entity-manager";
@@ -71,7 +68,7 @@ public class EntityManagerInspection extends AbstractDBInspection {
         return true;
     }
 
-    @NotNull
+    @Nonnull
     @Override
     public HighlightDisplayLevel getDefaultLevel() {
         return HighlightDisplayLevel.ERROR;
@@ -79,7 +76,7 @@ public class EntityManagerInspection extends AbstractDBInspection {
 
 
     @Override
-    public ProblemDescriptor[] checkFile(@NotNull PsiFile file, @NotNull InspectionManager manager, boolean isOnTheFly) {
+    public ProblemDescriptor[] checkFile(@Nonnull PsiFile file, @Nonnull InspectionManager manager, boolean isOnTheFly) {
         List<ProblemDescriptor> problemDescriptors = new ArrayList<ProblemDescriptor>();
         PsiElement[] classes = PsiTreeUtil.collectElements(file, new PsiClassesFilter());
         for (PsiElement psiClass : classes) {
@@ -311,13 +308,13 @@ public class EntityManagerInspection extends AbstractDBInspection {
             this.psiMethod = psiMethod;
         }
 
-        @NotNull
+        @Nonnull
         @Override
         public String getName() {
             return "Add @DB annotation to method";
         }
 
-        @NotNull
+        @Nonnull
         @Override
         public String getFamilyName() {
             return DB_FIX_ACTIONS_FAMILY;
@@ -337,13 +334,13 @@ public class EntityManagerInspection extends AbstractDBInspection {
             this.psiAnnotation = psiAnnotation;
         }
 
-        @NotNull
+        @Nonnull
         @Override
         public String getName() {
             return "Add transaction required attribute to @DB";
         }
 
-        @NotNull
+        @Nonnull
         @Override
         public String getFamilyName() {
             return DB_FIX_ACTIONS_FAMILY;
@@ -384,13 +381,13 @@ public class EntityManagerInspection extends AbstractDBInspection {
             this.psiAnnotation = psiAnnotation;
         }
 
-        @NotNull
+        @Nonnull
         @Override
         public String getName() {
             return "Delete transaction required attribute to @DB";
         }
 
-        @NotNull
+        @Nonnull
         @Override
         public String getFamilyName() {
             return DB_FIX_ACTIONS_FAMILY;
@@ -412,13 +409,13 @@ public class EntityManagerInspection extends AbstractDBInspection {
             this.psiAnnotation = psiAnnotation;
         }
 
-        @NotNull
+        @Nonnull
         @Override
         public String getName() {
             return "Delete not required annotation";
         }
 
-        @NotNull
+        @Nonnull
         @Override
         public String getFamilyName() {
             return DB_FIX_ACTIONS_FAMILY;
