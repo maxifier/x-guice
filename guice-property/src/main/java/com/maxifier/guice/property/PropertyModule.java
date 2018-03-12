@@ -40,6 +40,7 @@ import static com.maxifier.guice.property.converter.ArrayTypeConverter.*;
 @ParametersAreNonnullByDefault
 public class PropertyModule implements Module {
     private final ImmutableList<PropertyDefinition> properties;
+    private final String moduleName = UUID.randomUUID().toString();
     private final String source;
     private boolean bindConverters;
 
@@ -264,7 +265,7 @@ public class PropertyModule implements Module {
         binder = binder.skipSources(PropertyModule.class);
 
         // Bind module itself for later collection of properties
-        binder.bind(PropertyModule.class).annotatedWith(property(UUID.randomUUID().toString())).toInstance(this);
+        binder.bind(PropertyModule.class).annotatedWith(property(moduleName)).toInstance(this);
 
         for (PropertyDefinition prop : properties) {
             binder.bindConstant().annotatedWith(property(prop.getName())).to(prop.getValue());
