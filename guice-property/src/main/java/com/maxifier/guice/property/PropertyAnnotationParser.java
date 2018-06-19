@@ -3,12 +3,12 @@
  */
 package com.maxifier.guice.property;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
-
-import static com.maxifier.guice.property.PropertyReader.*;
 
 /**
  * Parses property comment and extracts {@code @annotation value} pairs.
@@ -27,74 +27,52 @@ import static com.maxifier.guice.property.PropertyReader.*;
  * @author Konstantin Lyamshin (2015-11-24 14:13)
  */
 class PropertyAnnotationParser implements Iterator<Map.Entry<String, String>> {
-    private final String comment;
-    private int pos;
+    private final PropertyReader reader;
 
     PropertyAnnotationParser(String comment) {
-        this.comment = comment;
-        for (pos = 0; pos < comment.length(); pos++) { // skip trailing spaces
-            if (!isWhitespace(comment.charAt(pos))) {
-                break;
+        try {
+            this.reader = new PropertyReader(new StringReader(comment));
+            while (reader.isWhitespaceOrNL() && reader.next()) {
+                // skip trailing spaces
             }
+        } catch (IOException e) {
+            throw new AssertionError(e); // will never happen
         }
     }
 
     @Override
     public boolean hasNext() {
-        return pos < comment.length();
+        return !reader.isEof();
     }
 
     @Override
     public Map.Entry<String, String> next() {
-        if (!hasNext()) {
+        if (reader.isEof()) {
             throw new NoSuchElementException();
         }
 
-        // key
-        char c = comment.charAt(pos);
-        int keyFrom = pos, keyTo = pos;
-        if (c == '@') {
-            for (; pos < comment.length(); pos++) {
-                c = comment.charAt(pos);
-                if (isWhitespaceOrNL(c)) {
-                    break;
-                }
+        try {
+            String key = "";
+            if (reader.peek() == '@') {
+                key = reader.readKey();
             }
-            keyTo = pos;
+
+            StringBuilder value = new StringBuilder();
+            do {
+                String line = reader.readValue();
+                if (value.length() > 0) {
+                    value.append('\n'); // normalize NLs
+                }
+                value.append(line.trim());
+                while (reader.isWhitespaceOrNL() && reader.next()) {
+                    // skip whitespaces and empty lines
+                }
+            } while (reader.peek() != '@' && !reader.isEof()); // until next annotation
+
+            return new AbstractMap.SimpleImmutableEntry<String, String>(key, value.toString());
+        } catch (IOException e) {
+            throw new AssertionError(e); // will never happen
         }
-
-        // delimiter
-        for (; pos < comment.length(); pos++) {
-            c = comment.charAt(pos);
-            if (!isWhitespace(c)) {
-                break;
-            }
-        }
-
-        // value
-        int valFrom = pos, valTo = pos;
-        do {
-            for (; pos < comment.length(); pos++) { // skip line
-                c = comment.charAt(pos);
-                if (isNL(c)) {
-                    break;
-                }
-                if (!isWhitespace(c)) { // trim value
-                    valTo = pos + 1;
-                }
-            }
-            for (; pos < comment.length(); pos++) { // leading space
-                c = comment.charAt(pos);
-                if (!isWhitespaceOrNL(c)) {
-                    break;
-                }
-            }
-        } while (c != '@' && pos < comment.length()); // until next annotation
-
-        return new AbstractMap.SimpleImmutableEntry<String, String>(
-            comment.substring(keyFrom, keyTo),
-            comment.substring(valFrom, valTo)
-        );
     }
 
     @Override
