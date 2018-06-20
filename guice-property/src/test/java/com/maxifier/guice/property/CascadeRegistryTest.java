@@ -221,7 +221,7 @@ public class CascadeRegistryTest extends org.testng.Assert {
 
         assertEquals(registry.keys(), ImmutableSet.of("PATH", "p"));
         assertEquals(registry.get("PATH"), System.getenv("PATH"));
-        assertEquals(registry.get("HOME"), null); // skip properties without default
+        assertEquals(registry.get("PWD"), null); // skip properties without default
         assertEquals(registry.get("p"), "def");
     }
 
@@ -231,13 +231,13 @@ public class CascadeRegistryTest extends org.testng.Assert {
         try {
             System.setProperty("PATH", "xxx");
             CascadeRegistry registry = new CascadeRegistry.Builder()
-                .withDefaults(ImmutableMap.of("PATH", "", "HOME", "", "p", "def"))
+                .withDefaults(ImmutableMap.of("PATH", "", "PWD", "", "p", "def"))
                 .withEnvironmentProperties()
                 .withSystemProperties()
                 .build();
 
-            assertEquals(registry.keys(), ImmutableSet.of("PATH", "HOME", "p"));
-            assertEquals(registry.get("HOME"), System.getenv("HOME")); // environment overriding
+            assertEquals(registry.keys(), ImmutableSet.of("PATH", "PWD", "p"));
+            assertEquals(registry.get("PWD"), System.getenv("PWD")); // environment overriding
             assertEquals(registry.get("PATH"), "xxx"); // system properties overrides environment
             assertEquals(registry.get("java.home"), null); // skip properties without default
             assertEquals(registry.get("p"), "def");
