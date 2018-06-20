@@ -55,6 +55,14 @@ public class PropertyModuleTest extends org.testng.Assert {
     }
 
     @Test
+    public void testLoadFromModuleClassFullName() throws Exception {
+        PropertyModule module = PropertyModule.loadFrom(TestSampleModule3.class);
+
+        ImmutableList<PropertyDefinition> properties = module.getProperties();
+        assertPropertiesList(properties, "furrr");
+    }
+
+    @Test
     public void testLoadFromCustomResource() throws Exception {
         PropertyModule module = PropertyModule.loadFrom("custom.properties");
 
@@ -149,64 +157,67 @@ public class PropertyModuleTest extends org.testng.Assert {
         assertEquals(config.abaz, new boolean[] {true, true, false});
     }
 
-    static class TestSampleModule extends AbstractModule {
-        @Override
-        protected void configure() {
-            install(PropertyModule.loadFrom(this).withConverters());
-            bind(TestSampleConfig.class);
-        }
-    }
+}
 
-    static abstract class TestSampleModule2 implements Module {
-    }
-
-    static class TestSampleConfigSimple {
-        @Inject
-        @Property("foo")
-        String foo;
-
-        @Inject
-        @Property("bar")
-        int bar;
-
-        @Inject
-        @Property("bar")
-        String sbar;
-
-        @Inject
-        @Property("baz")
-        boolean baz;
-    }
-
-    static class TestSampleConfig {
-        @Inject
-        @Property("foo")
-        String foo;
-
-        @Inject
-        @Property("bar")
-        int bar;
-
-        @Inject
-        @Property("bar")
-        String sbar;
-
-        @Inject
-        @Property("baz")
-        boolean baz;
-
-        @Inject
-        @Property("foo-array")
-        String[] afoo;
-
-        @Inject
-        @Property("bar-array")
-        int[] abar;
-
-        @Inject
-        @Property("baz-array")
-        boolean[] abaz;
+class TestSampleModule extends AbstractModule {
+    @Override
+    protected void configure() {
+        install(PropertyModule.loadFrom(this).withConverters());
+        bind(TestSampleConfig.class);
     }
 }
 
+abstract class TestSampleModule2 implements Module {
+}
+
+abstract class TestSampleModule3 implements Module {
+}
+
+class TestSampleConfigSimple {
+    @Inject
+    @Property("foo")
+    String foo;
+
+    @Inject
+    @Property("bar")
+    int bar;
+
+    @Inject
+    @Property("bar")
+    String sbar;
+
+    @Inject
+    @Property("baz")
+    boolean baz;
+}
+
+class TestSampleConfig {
+    @Inject
+    @Property("foo")
+    String foo;
+
+    @Inject
+    @Property("bar")
+    int bar;
+
+    @Inject
+    @Property("bar")
+    String sbar;
+
+    @Inject
+    @Property("baz")
+    boolean baz;
+
+    @Inject
+    @Property("foo-array")
+    String[] afoo;
+
+    @Inject
+    @Property("bar-array")
+    int[] abar;
+
+    @Inject
+    @Property("baz-array")
+    boolean[] abaz;
+}
 

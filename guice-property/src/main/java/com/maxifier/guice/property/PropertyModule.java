@@ -40,6 +40,7 @@ import static com.maxifier.guice.property.converter.ArrayTypeConverter.*;
 @ParametersAreNonnullByDefault
 public class PropertyModule implements Module {
     private final ImmutableList<PropertyDefinition> properties;
+    private final String moduleName = UUID.randomUUID().toString();
     private final String source;
     private boolean bindConverters;
 
@@ -60,20 +61,31 @@ public class PropertyModule implements Module {
     }
 
     /**
-     * Load properties from resource {@code module.getClass().getProperty() + ".properties"}
+     * Load properties from resource {@code module.getClass().properties} using UTF-8 encoding.
+     * @see #loadFrom(Class)
      */
     public static PropertyModule loadFrom(Module module) {
         return loadFrom(module.getClass());
     }
 
     /**
-     * Read properties from classpath resource {@code moduleClass.getProperty() + ".properties"}
+     * Read properties from classpath resource {@code moduleClass.properties} using UTF-8 encoding.
+     * <p>Property lookup sequence:</p>
+     * <ol>
+     *     <li>${moduleClass.getSimpleName()}.properties</li>
+     *     <li>${modulePackage.getName()}/${moduleClass.getSimpleName()}.properties</li>
+     *     <li>${moduleClass.getName()}.properties</li>
+     * </ol>
      */
     public static PropertyModule loadFrom(Class<? extends Module> moduleClass) {
+        ClassLoader classLoader = moduleClass.getClassLoader();
         String resourceName = moduleClass.getSimpleName() + ".properties";
-        InputStream inputStream = moduleClass.getResourceAsStream(resourceName);
-        if (inputStream == null) { // try w/o package name
-            inputStream = moduleClass.getResourceAsStream("/" + resourceName);
+        InputStream inputStream = classLoader.getResourceAsStream(resourceName);
+        if (inputStream == null) { // try with package
+            inputStream = moduleClass.getResourceAsStream(resourceName);
+        }
+        if (inputStream == null) { // try with full name
+            inputStream = classLoader.getResourceAsStream(moduleClass.getName() + ".properties");
         }
         if (inputStream == null) {
             throw new IllegalArgumentException("Can't load resource " + resourceName);
@@ -117,7 +129,7 @@ public class PropertyModule implements Module {
     }
 
     /**
-     * Reads properties from provided {@link InputStream} using ISO8859_1 encoding
+     * Reads properties from provided {@link InputStream} using UTF-8 encoding
      */
     public static PropertyModule loadFrom(InputStream inputStream) {
         try {
@@ -204,7 +216,7 @@ public class PropertyModule implements Module {
     }
 
     /**
-     * Reads properties from input stream using ISO8859_1 encoding.
+     * Reads properties from input stream using UTF-8 encoding.
      * <p>Data format is similar to original {@link Properties#load(InputStream)} format.</p>
      *
      * @param inputStream the input stream
@@ -230,7 +242,7 @@ public class PropertyModule implements Module {
         while (!reader.isEof()) {
             String comment = reader.readComment();
             String key = reader.readKey();
-            if (key != null) {
+            if (!key.isEmpty()) {
                 String value = reader.readValue();
                 properties.add(new PropertyDefinition(key, nullToEmpty(value), nullToEmpty(comment)));
             }
@@ -264,7 +276,7 @@ public class PropertyModule implements Module {
         binder = binder.skipSources(PropertyModule.class);
 
         // Bind module itself for later collection of properties
-        binder.bind(PropertyModule.class).annotatedWith(property(UUID.randomUUID().toString())).toInstance(this);
+        binder.bind(PropertyModule.class).annotatedWith(property(moduleName)).toInstance(this);
 
         for (PropertyDefinition prop : properties) {
             binder.bindConstant().annotatedWith(property(prop.getName())).to(prop.getValue());

@@ -25,11 +25,12 @@ public class PropertyAnnotationParserTest extends org.testng.Assert {
             { "line1", "=line1" },
             { "\tline1\f\n", "=line1" },
             { "@attr", "@attr="},
-            { "line1\n\nline2\n", "=line1\n\nline2" },
+            { "line1\n\nline2\n", "=line1\nline2" },
             { "line1\n\n@attr val\n", "=line1,@attr=val" },
             { "line1\n\n@attr\n@bttr", "=line1,@attr=,@bttr=" },
             { "line1\n\n@attr val\n@bttr vbl", "=line1,@attr=val,@bttr=vbl" },
-            { " @attr1 val1\n\t@attr2\tval2\r\t val3\t\n", "@attr1=val1,@attr2=val2\r\t val3" },
+            { " @attr1 val1\n\t@attr2\tval2\r\t val3\t\n", "@attr1=val1,@attr2=val2\nval3" },
+            { "# comment1\n value \n @attr\n # comment 3 \n aval", "=# comment1\nvalue,@attr=# comment 3\naval" } // bad thing: comments in comments
         };
     }
 
@@ -47,7 +48,7 @@ public class PropertyAnnotationParserTest extends org.testng.Assert {
     public void testGetPropertyAnnotation() throws Exception {
         String[] text = {
             " comment",
-            " @multiline true",
+            " @multiline true ",
             " check",
             " @type text"
         };
@@ -55,7 +56,7 @@ public class PropertyAnnotationParserTest extends org.testng.Assert {
         PropertyDefinition definition = new PropertyDefinition("k", "v", Joiner.on('\n').join(text));
 
         assertEquals(getPropertyAnnotation(definition, ""), "comment");
-        assertEquals(getPropertyAnnotation(definition, "@multiline"), "true\n check");
+        assertEquals(getPropertyAnnotation(definition, "@multiline"), "true\ncheck");
         assertEquals(getPropertyAnnotation(definition, "@type"), "text");
         assertEquals(getPropertyAnnotation(definition, "@none"), null);
     }
