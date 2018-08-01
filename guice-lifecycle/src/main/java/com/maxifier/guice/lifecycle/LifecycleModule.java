@@ -27,10 +27,8 @@ import java.util.Arrays;
  */
 public class LifecycleModule extends AbstractModule {
 
-    public static void bind(Binder binder) {
-        binder.install(new LifecycleModule());
-    }
-
+    // Don't register multiple shutdown hooks on several configure() calls
+    private final SafeShutdownInterceptor safeShutdownInterceptor = new SafeShutdownInterceptor();
 
     @Override
     protected void configure() {
@@ -40,7 +38,7 @@ public class LifecycleModule extends AbstractModule {
                 new PostConstructTypeListener(PostConstruct.class)
         );
         //@ShutdownSafe
-        bindInterceptor(Matchers.any(), Matchers.annotatedWith(ShutdownSafe.class), new SafeShutdownInterceptor());
+        bindInterceptor(Matchers.any(), Matchers.annotatedWith(ShutdownSafe.class), safeShutdownInterceptor);
         //Destroy container during JVM shutdown
         bind(ShutdownHook.class).asEagerSingleton();
     }
