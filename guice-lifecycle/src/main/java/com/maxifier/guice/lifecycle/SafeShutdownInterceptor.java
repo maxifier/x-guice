@@ -22,43 +22,35 @@ final class SafeShutdownInterceptor implements MethodInterceptor {
 
     private static final Logger logger = LoggerFactory.getLogger(SafeShutdownInterceptor.class);
 
-    private final AtomicInteger free = new AtomicInteger();
+    private final AtomicInteger free = new AtomicInteger(-1); // track first call
 
 
-    public SafeShutdownInterceptor() {
+    private void registerHook() {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                beforeShutdown();
+                logger.info("Safe shutdown start...");
                 while (free.get() != 0) {
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException ignored) {
                     }
                 }
-                afterShutdown();
+                logger.info("Safe shutdown complete");
             }
         });
-    }
-
-    void afterShutdown() {
-        logger.info("Safe shutdown complete");
-
     }
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
         try {
-            free.getAndIncrement();
+            if (free.getAndIncrement() == -1) {
+                free.getAndIncrement(); // shift basic line to 0
+                registerHook();
+            }
             return invocation.proceed();
         } finally {
             free.getAndDecrement();
         }
     }
-
-
-    void beforeShutdown() {
-        logger.info("Safe shutdown start...");
-    }
-
 }
