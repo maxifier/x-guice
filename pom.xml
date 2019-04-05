@@ -107,7 +107,7 @@
         <repository>
             <!-- This repository holds IntelliJ artifacts for guice-jpa-idea-plugin module -->
             <id>maxifier-thirdparty</id>
-            <url>https://nexus.maxifier.com/content/repositories/thirdparty</url>
+            <url>https://nexus.maxifier.com/repository/thirdparty</url>
         </repository>
     </repositories>
 
