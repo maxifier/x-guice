@@ -1,9 +1,13 @@
 package com.maxifier.guice.events;
 
-import com.google.inject.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Singleton;
+import org.mockito.Mockito;
 import org.testng.annotations.Test;
 
-import static org.mockito.Mockito.*;
 import static org.testng.Assert.assertEquals;
 
 /**
@@ -21,7 +25,7 @@ public class HandlerInjectionUTest {
     }
 
     static class SomeServiceImpl implements SomeService {
-        final SomeService tracker = mock(SomeService.class);
+        final SomeService tracker = Mockito.mock(SomeService.class);
 
         @Override
         public void handle(String s) {
@@ -53,7 +57,7 @@ public class HandlerInjectionUTest {
                 SomeServiceImpl service = new SomeServiceImpl();
                 bind(SomeService.class).toInstance(service);
 
-                when(service.tracker.whoAreYou()).thenReturn("I am service");
+                Mockito.when(service.tracker.whoAreYou()).thenReturn("I am service");
             }
         });
 
@@ -62,9 +66,9 @@ public class HandlerInjectionUTest {
 
         eventDispatcher.fireEvent("test");
 
-        verify(someService).handle("test");
-        verify(someService).whoAreYou();
-        verifyNoMoreInteractions(someService);
+        Mockito.verify(someService).handle("test");
+        Mockito.verify(someService).whoAreYou();
+        Mockito.verifyNoMoreInteractions(someService);
     }
 
     @Test
@@ -83,7 +87,7 @@ public class HandlerInjectionUTest {
 
         eventDispatcher.fireEvent(Animal.CAT);
 
-        verify(animalListener).animal(Animal.CAT);
-        verifyNoMoreInteractions(animalListener);
+        Mockito.verify(animalListener).animal(Animal.CAT);
+        Mockito.verifyNoMoreInteractions(animalListener);
     }
 }

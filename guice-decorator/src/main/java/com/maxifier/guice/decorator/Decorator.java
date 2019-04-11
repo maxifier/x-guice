@@ -1,6 +1,12 @@
 package com.maxifier.guice.decorator;
 
-import com.google.inject.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.Binder;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.Provider;
+import com.google.inject.Scope;
 import com.google.inject.util.Providers;
 
 import java.lang.annotation.Annotation;

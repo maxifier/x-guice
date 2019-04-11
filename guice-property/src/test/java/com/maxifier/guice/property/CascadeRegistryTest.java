@@ -12,14 +12,13 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.spi.Elements;
 import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.testng.annotations.Test;
 
 import javax.inject.Inject;
 import java.util.Properties;
-
-import static org.mockito.Mockito.*;
 
 /**
  * @author Konstantin Lyamshin (2015-12-30 1:11)
@@ -154,8 +153,8 @@ public class CascadeRegistryTest extends org.testng.Assert {
 
     @Test
     public void testCustomOverrider() throws Exception {
-        CascadeRegistry.Overrider overrider = mock(CascadeRegistry.Overrider.class);
-        when(overrider.override("p1", "def1")).thenReturn("over1");
+        CascadeRegistry.Overrider overrider = Mockito.mock(CascadeRegistry.Overrider.class);
+        Mockito.when(overrider.override("p1", "def1")).thenReturn("over1");
 
         CascadeRegistry registry = new CascadeRegistry.Builder()
             .withDefaults(ImmutableMap.of("p1", "def1", "p2", "def2", "p3", "def3"))
@@ -169,16 +168,16 @@ public class CascadeRegistryTest extends org.testng.Assert {
         assertEquals(registry.get("p3"), "def3");
         assertEquals(registry.get("p4"), null);
 
-        verify(overrider).override("p1", "def1");
-        verify(overrider).override("p2", "def2");
-        verify(overrider).override("p3", "def3");
-        verifyNoMoreInteractions(overrider);
+        Mockito.verify(overrider).override("p1", "def1");
+        Mockito.verify(overrider).override("p2", "def2");
+        Mockito.verify(overrider).override("p3", "def3");
+        Mockito.verifyNoMoreInteractions(overrider);
     }
 
     @Test
     public void testCustomOverriderOverOverrideProperties() throws Exception {
-        CascadeRegistry.Overrider overrider = mock(CascadeRegistry.Overrider.class);
-        when(overrider.override("p2", "val2")).thenReturn("over2");
+        CascadeRegistry.Overrider overrider = Mockito.mock(CascadeRegistry.Overrider.class);
+        Mockito.when(overrider.override("p2", "val2")).thenReturn("over2");
 
         CascadeRegistry registry = new CascadeRegistry.Builder()
             .withDefaults(ImmutableMap.of("p1", "def1", "p2", "def2", "p3", "def3"))
@@ -193,10 +192,10 @@ public class CascadeRegistryTest extends org.testng.Assert {
         assertEquals(registry.get("p3"), "def3");
         assertEquals(registry.get("p4"), null);
 
-        verify(overrider).override("p1", "val1");
-        verify(overrider).override("p2", "val2");
-        verify(overrider).override("p3", "def3");
-        verifyNoMoreInteractions(overrider);
+        Mockito.verify(overrider).override("p1", "val1");
+        Mockito.verify(overrider).override("p2", "val2");
+        Mockito.verify(overrider).override("p3", "def3");
+        Mockito.verifyNoMoreInteractions(overrider);
     }
 
     @Test
@@ -312,14 +311,14 @@ public class CascadeRegistryTest extends org.testng.Assert {
 
     @Test
     public void testCustomInterpolator() throws Exception {
-        CascadeRegistry.Interpolator interpolator = mock(CascadeRegistry.Interpolator.class);
-        when(interpolator.interpolate(anyString(), anyString(), ArgumentMatchers.<String, String>anyMap())).thenAnswer(new Answer<String>() {
+        CascadeRegistry.Interpolator interpolator = Mockito.mock(CascadeRegistry.Interpolator.class);
+        Mockito.when(interpolator.interpolate(Mockito.anyString(), Mockito.anyString(), ArgumentMatchers.<String, String>anyMap())).thenAnswer(new Answer<String>() {
             @Override
             public String answer(InvocationOnMock inv) throws Throwable {
                 return inv.getArgument(1);
             }
         });
-        when(interpolator.interpolate(eq("p2"), eq("v2"), ArgumentMatchers.<String, String>anyMap())).thenReturn("inter2");
+        Mockito.when(interpolator.interpolate(Mockito.eq("p2"), Mockito.eq("v2"), ArgumentMatchers.<String, String>anyMap())).thenReturn("inter2");
 
         CascadeRegistry registry = new CascadeRegistry.Builder()
             .withDefaults(ImmutableMap.of("p1", "v1", "p2", "v2", "p3", "v3"))
@@ -331,10 +330,10 @@ public class CascadeRegistryTest extends org.testng.Assert {
         assertEquals(registry.get("p2"), "inter2");
         assertEquals(registry.get("p3"), "v3");
 
-        verify(interpolator).interpolate(eq("p1"), eq("v1"), ArgumentMatchers.<String, String>anyMap());
-        verify(interpolator).interpolate(eq("p2"), eq("v2"), ArgumentMatchers.<String, String>anyMap());
-        verify(interpolator).interpolate(eq("p3"), eq("v3"), ArgumentMatchers.<String, String>anyMap());
-        verifyNoMoreInteractions(interpolator);
+        Mockito.verify(interpolator).interpolate(Mockito.eq("p1"), Mockito.eq("v1"), ArgumentMatchers.<String, String>anyMap());
+        Mockito.verify(interpolator).interpolate(Mockito.eq("p2"), Mockito.eq("v2"), ArgumentMatchers.<String, String>anyMap());
+        Mockito.verify(interpolator).interpolate(Mockito.eq("p3"), Mockito.eq("v3"), ArgumentMatchers.<String, String>anyMap());
+        Mockito.verifyNoMoreInteractions(interpolator);
     }
 
     @Test
@@ -357,7 +356,7 @@ public class CascadeRegistryTest extends org.testng.Assert {
 
     @Test
     public void testCustomPersister() throws Exception {
-        CascadeRegistry.Persister persister = mock(CascadeRegistry.Persister.class);
+        CascadeRegistry.Persister persister = Mockito.mock(CascadeRegistry.Persister.class);
 
         CascadeRegistry registry = new CascadeRegistry.Builder()
             .withDefaults(ImmutableMap.of("p1", "v1", "p2", "v2", "p3", "v3"))
@@ -372,8 +371,8 @@ public class CascadeRegistryTest extends org.testng.Assert {
 
         registry.store();
 
-        verify(persister).persist(ImmutableMap.of("p2", "v22", "p3", "v33"));
-        verifyNoMoreInteractions(persister);
+        Mockito.verify(persister).persist(ImmutableMap.of("p2", "v22", "p3", "v33"));
+        Mockito.verifyNoMoreInteractions(persister);
     }
 
     @Test

@@ -4,7 +4,14 @@
 package com.maxifier.guice.bootstrap;
 
 import com.google.common.base.Splitter;
-import com.google.inject.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.ConfigurationException;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Module;
+import com.google.inject.ProvisionException;
+import com.google.inject.Stage;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 import org.slf4j.Logger;
@@ -12,7 +19,12 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Provider;
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.unmodifiableMap;

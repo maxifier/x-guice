@@ -1,6 +1,15 @@
 package com.maxifier.guice.decorator;
 
-import com.google.inject.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.BindingAnnotation;
+import com.google.inject.CreationException;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Module;
+import com.google.inject.Scopes;
+import com.google.inject.Stage;
 import org.testng.annotations.Test;
 
 import java.lang.annotation.ElementType;
