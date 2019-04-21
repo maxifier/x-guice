@@ -4,7 +4,11 @@
 package com.maxifier.guice.bootstrap;
 
 import com.google.common.collect.Ordering;
-import com.google.inject.*;
+import com.google.inject.Binding;
+import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Module;
+import com.google.inject.Stage;
 import com.google.inject.name.Names;
 import com.google.inject.spi.DefaultElementVisitor;
 import com.google.inject.spi.Element;
