@@ -7,4 +7,19 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>guice-lifecycle</artifactId>
     <name>XGuice::Lifecycle</name>
+
+    <profiles>
+        <profile>
+            <id>jdk9</id>
+            <activation>
+                <jdk>[9,)</jdk>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>javax.annotation</groupId>
+                    <artifactId>javax.annotation-api</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
