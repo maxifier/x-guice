@@ -237,11 +237,11 @@
     <distributionManagement>
         <repository>
             <id>maxifier</id>
-            <url>https://nexus.maxifier.com/content/repositories/releases/</url>
+            <url>https://nexus.maxifier.com/repository/maven-releases/</url>
         </repository>
         <snapshotRepository>
             <id>maxifier</id>
-            <url>https://nexus.maxifier.com/content/repositories/snapshots/</url>
+            <url>https://nexus.maxifier.com/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
 
