@@ -1,10 +1,28 @@
 package com.maxifier.guice.jpa;
 
 import com.intellij.codeHighlighting.HighlightDisplayLevel;
-import com.intellij.codeInspection.*;
+import com.intellij.codeInspection.InspectionManager;
+import com.intellij.codeInspection.IntentionAndQuickFixAction;
+import com.intellij.codeInspection.LocalQuickFix;
+import com.intellij.codeInspection.ProblemDescriptor;
+import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiAnnotationMemberValue;
+import com.intellij.psi.PsiAnnotationOwner;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiExpression;
+import com.intellij.psi.PsiExpressionList;
+import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiIdentifier;
+import com.intellij.psi.PsiImportStaticStatement;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiModifierList;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.util.PsiElementFilter;
 import com.intellij.psi.util.PsiTreeUtil;
 
@@ -13,7 +31,14 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.maxifier.guice.jpa.GuiceJPAInspection.*;
+import static com.maxifier.guice.jpa.GuiceJPAInspection.AddModifierFixAction;
+import static com.maxifier.guice.jpa.GuiceJPAInspection.DB_NAME;
+import static com.maxifier.guice.jpa.GuiceJPAInspection.DeleteModifierFixAction;
+import static com.maxifier.guice.jpa.GuiceJPAInspection.FINAL_MODIFIER;
+import static com.maxifier.guice.jpa.GuiceJPAInspection.INSPECTIONS_GROUP_NAME;
+import static com.maxifier.guice.jpa.GuiceJPAInspection.STATIC_MODIFIER;
+import static com.maxifier.guice.jpa.GuiceJPAInspection.getAnnotation;
+import static com.maxifier.guice.jpa.GuiceJPAInspection.getModifier;
 
 /**
  * Created by: Aleksey Didik

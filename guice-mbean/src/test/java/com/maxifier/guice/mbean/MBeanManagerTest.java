@@ -1,11 +1,15 @@
 package com.maxifier.guice.mbean;
 
 import org.mockito.Matchers;
+import org.mockito.Mockito;
 import org.testng.annotations.Test;
 
-import javax.management.*;
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
 
-import static org.mockito.Mockito.*;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -25,7 +29,7 @@ public class MBeanManagerTest {
 
     @Test
     public void testDefaultName() {
-        MBeanManagerImpl test = new MBeanManagerImpl("test", mock(MBeanServer.class), null);
+        MBeanManagerImpl test = new MBeanManagerImpl("test", Mockito.mock(MBeanServer.class), null);
         final Object mbean = new Object();
         final String expected = "class=java.lang.Object";
         final String result = test.resolveName(mbean);
@@ -34,7 +38,7 @@ public class MBeanManagerTest {
 
     @Test
     public void testCheckAlreadyDomained() {
-        MBeanManagerImpl test = new MBeanManagerImpl("test", mock(MBeanServer.class), null);
+        MBeanManagerImpl test = new MBeanManagerImpl("test", Mockito.mock(MBeanServer.class), null);
         String tested = "mockDomain:service=test";
         String result = test.checkAlreadyDomained(tested);
         assertEquals("service=test", result);
@@ -50,7 +54,7 @@ public class MBeanManagerTest {
 
     @Test
     public void testAnnotationName() {
-        MBeanManagerImpl test = new MBeanManagerImpl("test", mock(MBeanServer.class), null);
+        MBeanManagerImpl test = new MBeanManagerImpl("test", Mockito.mock(MBeanServer.class), null);
         Object mbean = new Annotated();
         String expected = "service=test";
         String result = test.resolveName(mbean);
@@ -87,27 +91,27 @@ public class MBeanManagerTest {
 
     @Test
     public void testRegisterCompliant() throws Exception {
-        MBeanGenerator mBeanGenerator = mock(MBeanGenerator.class);
-        when(mBeanGenerator.makeMBean(Matchers.any())).thenReturn(new Object());
-        MBeanManagerImpl test = new MBeanManagerImpl("test", mock(MBeanServer.class), mBeanGenerator);
+        MBeanGenerator mBeanGenerator = Mockito.mock(MBeanGenerator.class);
+        Mockito.when(mBeanGenerator.makeMBean(Matchers.any())).thenReturn(new Object());
+        MBeanManagerImpl test = new MBeanManagerImpl("test", Mockito.mock(MBeanServer.class), mBeanGenerator);
         test.register(new FooCompliant());
-        verifyZeroInteractions(mBeanGenerator);
+        Mockito.verifyZeroInteractions(mBeanGenerator);
     }
 
     @Test
     public void testRegisterNotCompliant() throws Exception {
-        MBeanGenerator mBeanGenerator = mock(MBeanGenerator.class);
-        when(mBeanGenerator.makeMBean(Matchers.any())).thenReturn(new Object());
-        MBeanManagerImpl test = new MBeanManagerImpl("test", mock(MBeanServer.class), mBeanGenerator);
+        MBeanGenerator mBeanGenerator = Mockito.mock(MBeanGenerator.class);
+        Mockito.when(mBeanGenerator.makeMBean(Matchers.any())).thenReturn(new Object());
+        MBeanManagerImpl test = new MBeanManagerImpl("test", Mockito.mock(MBeanServer.class), mBeanGenerator);
         FooNotCompliant fooNotCompliant = new FooNotCompliant();
         test.register(fooNotCompliant);
-        verify(mBeanGenerator).makeMBean(fooNotCompliant);
+        Mockito.verify(mBeanGenerator).makeMBean(fooNotCompliant);
     }
 
 
     @Test
     public void testUnregisterAll() throws MalformedObjectNameException, MBeanRegistrationException, InstanceAlreadyExistsException, NotCompliantMBeanException {
-        MBeanManagerImpl test = new MBeanManagerImpl("test", mock(MBeanServer.class), mock(MBeanGenerator.class));
+        MBeanManagerImpl test = new MBeanManagerImpl("test", Mockito.mock(MBeanServer.class), Mockito.mock(MBeanGenerator.class));
         test.register(new Object());
         test.register(new Annotated());
         test.unregister();

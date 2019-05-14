@@ -2,7 +2,7 @@ package com.maxifier.guice.scope;
 
 import com.google.inject.Provider;
 
-import javax.swing.*;
+import javax.swing.SwingUtilities;
 import java.lang.reflect.InvocationTargetException;
 
 class UIProvider<T> implements Provider<T> {

@@ -15,19 +15,31 @@
             <groupId>com.intellij</groupId>
             <artifactId>openapi</artifactId>
             <scope>provided</scope>
+            <version>10.0.2</version>
         </dependency>
 
         <dependency>
             <groupId>com.intellij</groupId>
             <artifactId>util</artifactId>
             <scope>provided</scope>
+            <version>10.0.2</version>
         </dependency>
 
         <dependency>
             <groupId>com.intellij</groupId>
             <artifactId>extensions</artifactId>
             <scope>provided</scope>
+            <version>10.0.2</version>
         </dependency>
+
     </dependencies>
+
+    <repositories>
+        <repository>
+            <!-- This repository holds IntelliJ artifacts for guice-jpa-idea-plugin module -->
+            <id>maxifier-thirdparty</id>
+            <url>https://nexus.maxifier.com/repository/thirdparty</url>
+        </repository>
+    </repositories>
 
 </project>

@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Guice;
 import org.testng.annotations.Test;
@@ -20,9 +21,13 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.maxifier.guice.jpa.DB.Transaction.*;
-import static org.mockito.Mockito.*;
-import static org.testng.Assert.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Konstantin Lyamshin (2015-11-16 23:54)
@@ -111,12 +116,12 @@ public class DBInterceptorTest {
     public void testNoRetry() throws Exception {
         Callable<?> mock1 = mock(Callable.class);
         when(mock1.call()).thenReturn("OK");
-        assertEquals(retry0(mock1), "OK");
+        Assert.assertEquals(retry0(mock1), "OK");
         verify(mock1).call();
 
         Callable<?> mock2 = mock(Callable.class);
         when(mock2.call()).thenThrow(newTransientException());
-        try { retry0(mock2); fail("Exception expected"); } catch (PersistenceException ignored) {}
+        try { retry0(mock2); Assert.fail("Exception expected"); } catch (PersistenceException ignored) {}
         verify(mock2).call();
     }
 
@@ -124,14 +129,14 @@ public class DBInterceptorTest {
     public void testRetry() throws Exception {
         Callable<?> mock1 = mock(Callable.class);
         when(mock1.call()).thenReturn("OK1");
-        assertEquals(retry2(mock1), "OK1");
+        Assert.assertEquals(retry2(mock1), "OK1");
         verify(mock1, times(1)).call();
 
         Callable<?> mock2 = mock(Callable.class);
         when(mock2.call())
             .thenThrow(newTransientException())
             .thenReturn("OK2");
-        assertEquals(retry2(mock2), "OK2");
+        Assert.assertEquals(retry2(mock2), "OK2");
         verify(mock2, times(2)).call();
 
         Callable<?> mock3 = mock(Callable.class);
@@ -139,7 +144,7 @@ public class DBInterceptorTest {
             .thenThrow(newTransientException())
             .thenThrow(newTransientException())
             .thenReturn("OK3");
-        assertEquals(retry2(mock3), "OK3");
+        Assert.assertEquals(retry2(mock3), "OK3");
         verify(mock3, times(3)).call();
 
         Callable<?> mock4 = mock(Callable.class);
@@ -148,7 +153,7 @@ public class DBInterceptorTest {
             .thenThrow(newTransientException())
             .thenThrow(newTransientException())
             .thenReturn("OK4");
-        try { retry2(mock4); fail("Exception expected"); } catch (PersistenceException ignored) {}
+        try { retry2(mock4); Assert.fail("Exception expected"); } catch (PersistenceException ignored) {}
         verify(mock4, times(3)).call();
     }
 
@@ -164,12 +169,12 @@ public class DBInterceptorTest {
         };
 
         ticks.add(System.nanoTime());
-        try { retry2(recorder); fail("Exception expected"); } catch (PersistenceException ignored) {}
+        try { retry2(recorder); Assert.fail("Exception expected"); } catch (PersistenceException ignored) {}
 
-        assertEquals(ticks.size(), 4);
-        assertTrue(TimeUnit.NANOSECONDS.toMillis(ticks.get(1) - ticks.get(0)) >= 0); // in future
-        assertTrue(TimeUnit.NANOSECONDS.toMillis(ticks.get(2) - ticks.get(1)) >= 100); // with timeout
-        assertTrue(TimeUnit.NANOSECONDS.toMillis(ticks.get(3) - ticks.get(2)) >= 300); // with timeout
+        Assert.assertEquals(ticks.size(), 4);
+        Assert.assertTrue(TimeUnit.NANOSECONDS.toMillis(ticks.get(1) - ticks.get(0)) >= 0); // in future
+        Assert.assertTrue(TimeUnit.NANOSECONDS.toMillis(ticks.get(2) - ticks.get(1)) >= 100); // with timeout
+        Assert.assertTrue(TimeUnit.NANOSECONDS.toMillis(ticks.get(3) - ticks.get(2)) >= 300); // with timeout
     }
 
     @Test
@@ -178,8 +183,8 @@ public class DBInterceptorTest {
         when(mock.call()).thenThrow(newTransientException());
 
         Thread.currentThread().interrupt();
-        try { retry2(mock); fail("Exception expected"); } catch (PersistenceException ignored) {}
-        assertTrue(Thread.interrupted());
+        try { retry2(mock); Assert.fail("Exception expected"); } catch (PersistenceException ignored) {}
+        Assert.assertTrue(Thread.interrupted());
         verify(mock, times(1)).call();
     }
 
@@ -211,9 +216,9 @@ public class DBInterceptorTest {
         verify(emm, never()).close();
     }
 
-    @DB(transaction = REQUIRED)
+    @DB(transaction = DB.Transaction.REQUIRED)
     void dbNoConnection() {
-        assertEquals(em.toString(), "EntityManagerProxy{UnitOfWork{transactional}}");
+        Assert.assertEquals(em.toString(), "EntityManagerProxy{UnitOfWork{transactional}}");
     }
 
     @Test
@@ -225,9 +230,9 @@ public class DBInterceptorTest {
         verify(emm).close();
     }
 
-    @DB(transaction = NOT_REQUIRED)
+    @DB(transaction = DB.Transaction.NOT_REQUIRED)
     void dbNoTransaction() {
-        assertEquals(em.getTransaction().isActive(), false);
+        Assert.assertEquals(em.getTransaction().isActive(), false);
     }
 
     @Test
@@ -239,9 +244,9 @@ public class DBInterceptorTest {
         verify(emm).close();
     }
 
-    @DB(transaction = REQUIRED)
+    @DB(transaction = DB.Transaction.REQUIRED)
     void dbTransaction() {
-        assertEquals(em.getTransaction().isActive(), true);
+        Assert.assertEquals(em.getTransaction().isActive(), true);
     }
 
     @Test
@@ -253,9 +258,9 @@ public class DBInterceptorTest {
         verify(emm).close();
     }
 
-    @DB(transaction = REQUIRES_NEW)
+    @DB(transaction = DB.Transaction.REQUIRES_NEW)
     void dbTransactionNew() {
-        assertEquals(em.getTransaction().isActive(), true);
+        Assert.assertEquals(em.getTransaction().isActive(), true);
     }
 
     @Test(dependsOnMethods = "testNoTransaction")
@@ -267,15 +272,15 @@ public class DBInterceptorTest {
         verify(emm).close();
     }
 
-    @DB(transaction = NOT_REQUIRED)
+    @DB(transaction = DB.Transaction.NOT_REQUIRED)
     void dbNestedNoTransactions1() {
         dbNestedNoTransactions2();
-        assertEquals(em.getTransaction().isActive(), false);
+        Assert.assertEquals(em.getTransaction().isActive(), false);
     }
 
-    @DB(transaction = NOT_REQUIRED)
+    @DB(transaction = DB.Transaction.NOT_REQUIRED)
     void dbNestedNoTransactions2() {
-        assertEquals(em.getTransaction().isActive(), false);
+        Assert.assertEquals(em.getTransaction().isActive(), false);
     }
 
     @Test(dependsOnMethods = "testTransaction")
@@ -287,15 +292,15 @@ public class DBInterceptorTest {
         verify(emm).close();
     }
 
-    @DB(transaction = REQUIRED)
+    @DB(transaction = DB.Transaction.REQUIRED)
     void dbNestedTransactions1() {
         dbNestedTransactions2();
-        assertEquals(em.getTransaction().isActive(), true);
+        Assert.assertEquals(em.getTransaction().isActive(), true);
     }
 
-    @DB(transaction = REQUIRED)
+    @DB(transaction = DB.Transaction.REQUIRED)
     void dbNestedTransactions2() {
-        assertEquals(em.getTransaction().isActive(), true);
+        Assert.assertEquals(em.getTransaction().isActive(), true);
     }
 
     @Test(dependsOnMethods = "testTransactionNew")
@@ -307,9 +312,9 @@ public class DBInterceptorTest {
         verify(emm, times(2)).close();
     }
 
-    @DB(transaction = REQUIRES_NEW)
+    @DB(transaction = DB.Transaction.REQUIRES_NEW)
     void dbNestedTransactionsNew1() {
-        assertEquals(em.getTransaction().isActive(), true);
+        Assert.assertEquals(em.getTransaction().isActive(), true);
         verify(emf, times(1)).createEntityManager();
         verify(emm.getTransaction(), times(1)).begin();
         dbNestedTransactionsNew2();
@@ -317,9 +322,9 @@ public class DBInterceptorTest {
         verify(emm, times(1)).close();
     }
 
-    @DB(transaction = REQUIRES_NEW)
+    @DB(transaction = DB.Transaction.REQUIRES_NEW)
     void dbNestedTransactionsNew2() {
-        assertEquals(em.getTransaction().isActive(), true);
+        Assert.assertEquals(em.getTransaction().isActive(), true);
         verify(emf, times(2)).createEntityManager();
         verify(emm.getTransaction(), times(2)).begin();
     }
@@ -333,18 +338,18 @@ public class DBInterceptorTest {
         verify(emm).close();
     }
 
-    @DB(transaction = NOT_REQUIRED)
+    @DB(transaction = DB.Transaction.NOT_REQUIRED)
     void dbStartTransaction1() {
-        assertEquals(em.getTransaction().isActive(), false);
+        Assert.assertEquals(em.getTransaction().isActive(), false);
         dbStartTransaction2();
-        assertEquals(em.getTransaction().isActive(), false);
+        Assert.assertEquals(em.getTransaction().isActive(), false);
         verify(emm.getTransaction()).begin();
         verify(emm.getTransaction()).commit();
     }
 
-    @DB(transaction = REQUIRED)
+    @DB(transaction = DB.Transaction.REQUIRED)
     void dbStartTransaction2() {
-        assertEquals(em.getTransaction().isActive(), true);
+        Assert.assertEquals(em.getTransaction().isActive(), true);
     }
 
     @Test(dependsOnMethods = "testTransaction")
@@ -356,16 +361,16 @@ public class DBInterceptorTest {
         verify(emm).close();
     }
 
-    @DB(transaction = REQUIRED)
+    @DB(transaction = DB.Transaction.REQUIRED)
     void dbSupportsTransaction1() {
-        assertEquals(em.getTransaction().isActive(), true);
+        Assert.assertEquals(em.getTransaction().isActive(), true);
         dbSupportsTransaction2();
-        assertEquals(em.getTransaction().isActive(), true);
+        Assert.assertEquals(em.getTransaction().isActive(), true);
     }
 
-    @DB(transaction = NOT_REQUIRED)
+    @DB(transaction = DB.Transaction.NOT_REQUIRED)
     void dbSupportsTransaction2() {
-        assertEquals(em.getTransaction().isActive(), true);
+        Assert.assertEquals(em.getTransaction().isActive(), true);
     }
 
     @Test(dependsOnMethods = "testNestedTransactionsNew")
@@ -377,20 +382,20 @@ public class DBInterceptorTest {
         verify(emm, times(2)).close();
     }
 
-    @DB(transaction = NOT_REQUIRED)
+    @DB(transaction = DB.Transaction.NOT_REQUIRED)
     void dbDeepNesting1() {
-        assertEquals(em.getTransaction().isActive(), false);
+        Assert.assertEquals(em.getTransaction().isActive(), false);
         verify(emf, times(1)).createEntityManager();
         verify(emm.getTransaction(), times(0)).begin();
         verify(emm.getTransaction(), times(0)).commit();
         verify(emm, times(0)).close();
         dbDeepNesting2();
-        assertEquals(em.getTransaction().isActive(), false);
+        Assert.assertEquals(em.getTransaction().isActive(), false);
     }
 
-    @DB(transaction = REQUIRED)
+    @DB(transaction = DB.Transaction.REQUIRED)
     void dbDeepNesting2() {
-        assertEquals(em.getTransaction().isActive(), true);
+        Assert.assertEquals(em.getTransaction().isActive(), true);
         dbDeepNesting3();
         active.set(true); // manually reset state because we have only one connection instance
         verify(emf, times(2)).createEntityManager();
@@ -399,9 +404,9 @@ public class DBInterceptorTest {
         verify(emm, times(1)).close();
     }
 
-    @DB(transaction = REQUIRES_NEW)
+    @DB(transaction = DB.Transaction.REQUIRES_NEW)
     void dbDeepNesting3() {
-        assertEquals(em.getTransaction().isActive(), true);
+        Assert.assertEquals(em.getTransaction().isActive(), true);
         verify(emf, times(2)).createEntityManager();
         verify(emm.getTransaction(), times(2)).begin();
         verify(emm.getTransaction(), times(0)).commit();
@@ -416,11 +421,11 @@ public class DBInterceptorTest {
         verify(emm.getTransaction(), never()).rollback();
     }
 
-    @DB(transaction = NOT_REQUIRED)
+    @DB(transaction = DB.Transaction.NOT_REQUIRED)
     void dbNoTransactionException() {
-        assertEquals(em.getTransaction().getRollbackOnly(), false);
-        try { dbException(); fail("Exception expected"); } catch (PersistenceException ignored) {}
-        assertEquals(em.getTransaction().getRollbackOnly(), false);
+        Assert.assertEquals(em.getTransaction().getRollbackOnly(), false);
+        try { dbException(); Assert.fail("Exception expected"); } catch (PersistenceException ignored) {}
+        Assert.assertEquals(em.getTransaction().getRollbackOnly(), false);
     }
 
     @Test(dependsOnMethods = "testTransaction")
@@ -431,16 +436,16 @@ public class DBInterceptorTest {
         verify(emm.getTransaction()).rollback();
     }
 
-    @DB(transaction = REQUIRED)
+    @DB(transaction = DB.Transaction.REQUIRED)
     void dbTransactionException() {
-        assertEquals(em.getTransaction().getRollbackOnly(), false);
-        try { dbException(); fail("Exception expected"); } catch (PersistenceException ignored) {}
-        assertEquals(em.getTransaction().getRollbackOnly(), true);
+        Assert.assertEquals(em.getTransaction().getRollbackOnly(), false);
+        try { dbException(); Assert.fail("Exception expected"); } catch (PersistenceException ignored) {}
+        Assert.assertEquals(em.getTransaction().getRollbackOnly(), true);
     }
 
-    @DB(transaction = NOT_REQUIRED)
+    @DB(transaction = DB.Transaction.NOT_REQUIRED)
     void dbException() {
-        assertEquals(em.getTransaction().getRollbackOnly(), false);
+        Assert.assertEquals(em.getTransaction().getRollbackOnly(), false);
         throw new PersistenceException();
     }
 

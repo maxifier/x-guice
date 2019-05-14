@@ -9,7 +9,11 @@ import com.google.inject.name.Names;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * @author Konstantin Lyamshin (2015-11-05 21:11)

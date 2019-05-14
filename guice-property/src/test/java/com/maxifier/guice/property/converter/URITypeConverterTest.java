@@ -1,6 +1,9 @@
 package com.maxifier.guice.property.converter;
 
-import com.google.inject.*;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
+import com.google.inject.TypeLiteral;
 import com.maxifier.guice.property.Property;
 import com.maxifier.guice.property.PropertyModule;
 import org.testng.annotations.Test;

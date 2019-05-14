@@ -1,14 +1,17 @@
 package com.maxifier.guice.events;
 
 
+import org.mockito.Mockito;
 import org.testng.annotations.Test;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.mockito.Mockito.*;
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 public class EventDispatcherUTest {
 
@@ -33,34 +36,34 @@ public class EventDispatcherUTest {
 
     @Test
     public void testMethodParam() {
-        EventDispatcher dispatcher = new EventDispatcherImpl(mock(ListenerRegistrationQueue.class));
-        Listener listener = mock(Listener.class);
+        EventDispatcher dispatcher = new EventDispatcherImpl(Mockito.mock(ListenerRegistrationQueue.class));
+        Listener listener = Mockito.mock(Listener.class);
         ListenerWrapper wrapper = new ListenerWrapper(listener);
         dispatcher.register(wrapper);
         dispatcher.fireEvent("123");
 
-        verify(listener).test("123");
-        verifyNoMoreInteractions(listener);
+        Mockito.verify(listener).test("123");
+        Mockito.verifyNoMoreInteractions(listener);
     }
 
     @Test
     public void testClassFilters() {
-        EventDispatcher dispatcher = new EventDispatcherImpl(mock(ListenerRegistrationQueue.class));
+        EventDispatcher dispatcher = new EventDispatcherImpl(Mockito.mock(ListenerRegistrationQueue.class));
 
-        AnimalListener listener = mock(AnimalListener.class);
+        AnimalListener listener = Mockito.mock(AnimalListener.class);
         AnimalListenerWrapper wrapper = new AnimalListenerWrapper(listener);
         dispatcher.register(wrapper);
 
         for (Animal animal : Animal.values()) {
             dispatcher.fireEvent(animal);
-            verify(listener).animal(animal);
+            Mockito.verify(listener).animal(animal);
         }
 
-        verify(listener).dangerousAnimal(Animal.CROCODILE);
-        verify(listener).dangerousAnimal(Animal.TIGER);
-        verify(listener).eatableAnimal(Animal.RABBIT);
+        Mockito.verify(listener).dangerousAnimal(Animal.CROCODILE);
+        Mockito.verify(listener).dangerousAnimal(Animal.TIGER);
+        Mockito.verify(listener).eatableAnimal(Animal.RABBIT);
 
-        verifyNoMoreInteractions(listener);
+        Mockito.verifyNoMoreInteractions(listener);
     }
 
     @Test(expectedExceptions = CyclicFilterAnnotationException.class)
@@ -72,7 +75,7 @@ public class EventDispatcherUTest {
             }
         }
 
-        EventDispatcher d = new EventDispatcherImpl(mock(ListenerRegistrationQueue.class));
+        EventDispatcher d = new EventDispatcherImpl(Mockito.mock(ListenerRegistrationQueue.class));
         d.register(new Test1());
     }
 
@@ -85,7 +88,7 @@ public class EventDispatcherUTest {
             }
         }
 
-        EventDispatcher d = new EventDispatcherImpl(mock(ListenerRegistrationQueue.class));
+        EventDispatcher d = new EventDispatcherImpl(Mockito.mock(ListenerRegistrationQueue.class));
         d.register(new Test2());
     }
 
@@ -98,7 +101,7 @@ public class EventDispatcherUTest {
             }
         }
 
-        EventDispatcher d = new EventDispatcherImpl(mock(ListenerRegistrationQueue.class));
+        EventDispatcher d = new EventDispatcherImpl(Mockito.mock(ListenerRegistrationQueue.class));
         d.register(new TestAuto());
     }
 
@@ -111,7 +114,7 @@ public class EventDispatcherUTest {
             }
         }
 
-        EventDispatcher d = new EventDispatcherImpl(mock(ListenerRegistrationQueue.class));
+        EventDispatcher d = new EventDispatcherImpl(Mockito.mock(ListenerRegistrationQueue.class));
         d.register(new Test1());
     }
 
@@ -125,7 +128,7 @@ public class EventDispatcherUTest {
             boolean b;
 
             TestEventDispatcher() {
-                super(mock(ListenerRegistrationQueue.class));
+                super(Mockito.mock(ListenerRegistrationQueue.class));
             }
 
             @Override
@@ -154,7 +157,7 @@ public class EventDispatcherUTest {
         }
 
         ReferenceQueue<? super TestListener> q = new ReferenceQueue<TestListener>();
-        EventDispatcher d = new EventDispatcherImpl(mock(ListenerRegistrationQueue.class));
+        EventDispatcher d = new EventDispatcherImpl(Mockito.mock(ListenerRegistrationQueue.class));
         TestListener tl = new TestListener();
 
         WeakReference<TestListener> wr = new WeakReference<TestListener>(tl, q);
@@ -172,9 +175,9 @@ public class EventDispatcherUTest {
 
     @Test
     public void testRegisterInHandler() {
-        final EventDispatcher d = new EventDispatcherImpl(mock(ListenerRegistrationQueue.class));
+        final EventDispatcher d = new EventDispatcherImpl(Mockito.mock(ListenerRegistrationQueue.class));
 
-        final Listener l = mock(Listener.class);
+        final Listener l = Mockito.mock(Listener.class);
         final ListenerWrapper wrapper = new ListenerWrapper(l);
 
         class TestListener {
@@ -207,8 +210,8 @@ public class EventDispatcherUTest {
         d.fireEvent("222");
 
         assertEquals(tl.x, 3);
-        verify(l).test("222");
-        verifyNoMoreInteractions(l);
+        Mockito.verify(l).test("222");
+        Mockito.verifyNoMoreInteractions(l);
     }
 
     // https://jira.maxifier.com/browse/XGUICE-30

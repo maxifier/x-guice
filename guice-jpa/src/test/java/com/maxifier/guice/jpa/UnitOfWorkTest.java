@@ -1,6 +1,7 @@
 package com.maxifier.guice.jpa;
 
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -10,8 +11,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.PersistenceException;
-
-import static org.mockito.Mockito.*;
 
 /**
  * @author Konstantin Lyamshin (2015-11-17 0:49)
@@ -24,8 +23,8 @@ public class UnitOfWorkTest extends org.testng.Assert {
     @BeforeMethod
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(emf.createEntityManager()).thenReturn(em);
-        when(em.getTransaction()).thenReturn(tr);
+        Mockito.when(emf.createEntityManager()).thenReturn(em);
+        Mockito.when(em.getTransaction()).thenReturn(tr);
     }
 
     @AfterMethod
@@ -58,33 +57,33 @@ public class UnitOfWorkTest extends org.testng.Assert {
         // non-transactional
         UnitOfWork context1 = UnitOfWork.create();
         assertSame(context1.getConnection(emf), em);
-        verify(emf, times(1)).createEntityManager();
-        verify(em, never()).getTransaction();
+        Mockito.verify(emf, Mockito.times(1)).createEntityManager();
+        Mockito.verify(em, Mockito.never()).getTransaction();
         assertSame(UnitOfWork.get(), context1);
 
         // transactional
         UnitOfWork context2 = UnitOfWork.create();
         context2.startTransaction();
         assertSame(context2.getConnection(emf), em);
-        verify(emf, times(2)).createEntityManager();
-        verify(em).getTransaction();
-        verify(tr).begin();
+        Mockito.verify(emf, Mockito.times(2)).createEntityManager();
+        Mockito.verify(em).getTransaction();
+        Mockito.verify(tr).begin();
         assertSame(UnitOfWork.get(), context2);
 
         // regular close
         context2.releaseConnection();
-        verify(em, times(1)).close();
-        verify(tr, times(1)).isActive();
-        verify(tr, never()).commit();
-        verify(tr, never()).rollback();
+        Mockito.verify(em, Mockito.times(1)).close();
+        Mockito.verify(tr, Mockito.times(1)).isActive();
+        Mockito.verify(tr, Mockito.never()).commit();
+        Mockito.verify(tr, Mockito.never()).rollback();
         assertSame(UnitOfWork.get(), context1);
 
         // orphan transaction close
-        when(tr.isActive()).thenReturn(true);
+        Mockito.when(tr.isActive()).thenReturn(true);
         context1.releaseConnection();
-        verify(em, times(2)).close();
-        verify(tr, times(2)).isActive();
-        verify(tr).commit();
+        Mockito.verify(em, Mockito.times(2)).close();
+        Mockito.verify(tr, Mockito.times(2)).isActive();
+        Mockito.verify(tr).commit();
         assertSame(UnitOfWork.get(), null);
     }
 
@@ -92,7 +91,7 @@ public class UnitOfWorkTest extends org.testng.Assert {
     public void testMismatchEMF() throws Exception {
         UnitOfWork context = UnitOfWork.create();
         context.getConnection(emf);
-        context.getConnection(mock(EntityManagerFactory.class));
+        context.getConnection(Mockito.mock(EntityManagerFactory.class));
     }
 
     @Test
@@ -102,7 +101,7 @@ public class UnitOfWorkTest extends org.testng.Assert {
         context.getConnection(emf);
         assertSame(UnitOfWork.get(), context);
 
-        doThrow(new PersistenceException()).when(em).close();
+        Mockito.doThrow(new PersistenceException()).when(em).close();
 
         try { context.releaseConnection(); fail("Exception expected"); } catch (PersistenceException ignored) {}
 
@@ -117,8 +116,8 @@ public class UnitOfWorkTest extends org.testng.Assert {
         context.getConnection(emf);
         assertSame(UnitOfWork.get(), context);
 
-        when(tr.isActive()).thenReturn(true);
-        doThrow(new PersistenceException()).when(tr).commit();
+        Mockito.when(tr.isActive()).thenReturn(true);
+        Mockito.doThrow(new PersistenceException()).when(tr).commit();
 
         try { context.releaseConnection(); fail("Exception expected"); } catch (PersistenceException ignored) {}
 
@@ -145,10 +144,10 @@ public class UnitOfWorkTest extends org.testng.Assert {
         assertEquals(context.startTransaction(), false);
 
         context.getConnection(emf);
-        verify(tr).begin();
+        Mockito.verify(tr).begin();
 
         context.endTransaction();
-        verify(tr).commit();
+        Mockito.verify(tr).commit();
         assertEquals(context.toString(), "UnitOfWork{connected}");
     }
 
@@ -156,17 +155,17 @@ public class UnitOfWorkTest extends org.testng.Assert {
     public void testTransactionLater() throws Exception {
         UnitOfWork context = UnitOfWork.create();
         context.getConnection(emf);
-        verify(tr, never()).begin();
+        Mockito.verify(tr, Mockito.never()).begin();
         assertEquals(context.toString(), "UnitOfWork{connected}");
 
         assertEquals(context.startTransaction(), true);
         assertEquals(context.startTransaction(), false);
         assertEquals(context.toString(), "UnitOfWork{connected, transactional}");
-        verify(tr).begin();
+        Mockito.verify(tr).begin();
 
         context.endTransaction();
         assertEquals(context.toString(), "UnitOfWork{connected}");
-        verify(tr).commit();
+        Mockito.verify(tr).commit();
     }
 
     @Test
@@ -175,17 +174,17 @@ public class UnitOfWorkTest extends org.testng.Assert {
         context.startTransaction();
         context.getConnection(emf);
 
-        when(tr.isActive()).thenReturn(true);
-        when(tr.getRollbackOnly()).thenReturn(true);
-        verify(tr, times(0)).rollback();
+        Mockito.when(tr.isActive()).thenReturn(true);
+        Mockito.when(tr.getRollbackOnly()).thenReturn(true);
+        Mockito.verify(tr, Mockito.times(0)).rollback();
 
         context.endTransaction();
-        verify(tr, times(1)).rollback();
+        Mockito.verify(tr, Mockito.times(1)).rollback();
 
         context.releaseConnection();
-        verify(tr, times(2)).rollback();
+        Mockito.verify(tr, Mockito.times(2)).rollback();
 
-        verify(tr, never()).commit();
+        Mockito.verify(tr, Mockito.never()).commit();
     }
 
     @Test
@@ -195,10 +194,10 @@ public class UnitOfWorkTest extends org.testng.Assert {
 
         context.getConnection(emf);
         context.setRollbackOnly(); // nop, no transaction
-        verify(tr, never()).setRollbackOnly();
+        Mockito.verify(tr, Mockito.never()).setRollbackOnly();
 
-        when(tr.isActive()).thenReturn(true);
+        Mockito.when(tr.isActive()).thenReturn(true);
         context.setRollbackOnly();
-        verify(tr).setRollbackOnly();
+        Mockito.verify(tr).setRollbackOnly();
     }
 }

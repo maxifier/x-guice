@@ -4,7 +4,11 @@ import com.intellij.codeInspection.InspectionToolProvider;
 import com.intellij.codeInspection.IntentionAndQuickFixAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiModifierList;
 import com.intellij.psi.util.PsiUtil;
 
 import javax.annotation.Nonnull;
