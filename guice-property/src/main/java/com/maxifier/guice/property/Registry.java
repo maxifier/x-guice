@@ -33,13 +33,10 @@ public interface Registry {
      * @return property value or {@code defaultValue} if no such property found
      */
     @Nonnull
-    String getOrDefault(String key, String defaultValue);
-
-    /**
-     * @return property metadata or null if not found
-     */
-    @Nullable
-    PropertyDefinition getDefinition(String key);
+    default String getOrDefault(String key, String defaultValue)  {
+        String value = get(key);
+        return value != null ? value : defaultValue;
+    }
 
     /**
      * Update property value
@@ -50,4 +47,44 @@ public interface Registry {
      * Persist changes in persistent storage
      */
     void store();
+
+    default int getInt(String key)  {
+        return Integer.parseInt(get(key));
+    }
+
+    default int getIntOrDefault(String key, int defaultValue) {
+        String s = get(key);
+        return s != null ? Integer.parseInt(s) : defaultValue;
+    }
+
+    default long getLong(String key)  {
+        return Long.parseLong(get(key));
+    }
+
+    default long getLongOrDefault(String key, long defaultValue) {
+        String s = get(key);
+        return s != null ? Long.parseLong(s) : defaultValue;
+    }
+
+    default double getDouble(String key) {
+        return Double.parseDouble(get(key));
+    }
+
+    default double getDoubleOrDefault(String key, double defaultValue) {
+        String s = get(key);
+        return s != null ? Double.parseDouble(s) : defaultValue;
+    }
+
+    default boolean getBoolean(String key) {
+        return getBooleanOrDefault(key, false);
+    }
+
+    default boolean getBooleanOrDefault(String key, boolean defaultValue) {
+        final String v = get(key);
+        if (v == null) {
+            return defaultValue;
+        }
+        return v.equalsIgnoreCase("true") || v.equalsIgnoreCase("yes");
+    }
+
 }

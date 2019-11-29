@@ -98,7 +98,6 @@ public class CascadeRegistry implements Registry {
     }
 
     @Nullable
-    @Override
     public PropertyDefinition getDefinition(String key) {
         return defaults.get(key);
     }
