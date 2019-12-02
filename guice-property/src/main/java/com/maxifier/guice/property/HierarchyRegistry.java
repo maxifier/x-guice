@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -91,7 +92,7 @@ public class HierarchyRegistry implements Registry {
 
     @Override
     public Set<String> keys() {
-        Set<String> strings = properties.stringPropertyNames();
+        Set<String> strings = new HashSet<>(properties.stringPropertyNames());
         strings.addAll(commandLineProperties.keySet());
         strings.remove("import");
         return strings;
